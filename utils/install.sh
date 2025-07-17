@@ -12,11 +12,11 @@ if [ -f "$DEST" ]; then
   printf "File %s exists. Overwrite? [y/N]: " "$DEST"
   read ans < /dev/tty
   case "$ans" in
+    [yY]*) ;;
     *)
       echo
       echo "Okey dokie. Bacon smokey. No overwriting $DEST"
       exit 1;;
-    [yY]*) ;;
   esac
 fi
 
