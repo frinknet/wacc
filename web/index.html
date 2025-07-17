@@ -1,1 +1,0 @@
-<!doctype html><html><body style="background:black"><script>WASM=>WebAssembly.instantiateStreaming(fetch(uri),{env:{eval:(p,l)=>new Function(new TextDecoder().decode(new Uint8Array(WASM.exports.memory.buffer,p,l)))()}}).then(M=>(WASM=M.instance;,WASM.exports.init(),WASM))</script></body></html>
