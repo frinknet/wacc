@@ -13,7 +13,7 @@ if [ -f "$DEST" ]; then
   read ans < /dev/tty
   case "$ans" in
     [yY]*) ;;
-    *) echo "Install aborted."; exit 3;;
+    *) echo;echo "Okey dokie. Bacon smokey. No overwriting $DEST";;
   esac
 fi
 
@@ -26,7 +26,8 @@ if command -v curl >/dev/null; then
 elif command -v wget >/dev/null; then
   wget -qO "$TMP" "$URL"
 else
-  echo "Error: need curl or wget." >&2
+  echo
+  echo "What you don'tt have curl or wget!!!!" >&2
   exit 2
 fi
 
@@ -34,7 +35,7 @@ sed -i "s|^REPO=.*|REPO=\"$REPO\"|" "$TMP"
 mv "$TMP" "$DEST" && chmod +x "$DEST"
 
 echo
-echo "Okey dokie. Bacon smokey. No overwritingo $DEST"
+echo "Installed at $DEST";
 
 COMPD="/etc/bash_completion.d"
 [ -w "$COMPD" ] || COMPD="$HOME/.bash_completion.d"
