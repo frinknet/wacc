@@ -10,7 +10,7 @@ mkdir -p "$BASEDIR"
 
 if [ -f "$DEST" ]; then
   printf "File %s exists. Overwrite? [y/N]: " "$DEST"
-  read ans
+  read ans < /dev/tty
   case "$ans" in
     [yY]*) ;;
     *) echo "Install aborted."; exit 3;;
