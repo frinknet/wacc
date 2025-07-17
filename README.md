@@ -1,31 +1,21 @@
-# JSCC WebAssembly Bridge — Quickstart & CLI
+# WebAssembly Concise Compiler & Server
 
-Welcome to **JSCC**: a sleek, no-nonsense C-to-JS WebAssembly bridge with warp-speed bootstrapping.
+work in progress not quite ready for primetime but maturing fast.
 
 ---
 
 ## Features
 
-- Minimal clutter C and JavaScript bridge for WebAssembly + ImGui demos
-- Bidirectional JS/C calls with smart `js_value` packing/unpacking
-- CLI tool to **init** new projects with upstream submodule integration and files scaffolded
-- Docker-based build and static server powered by Caddy for instant testing
-- Auto-rebuild and live reload with `jscc serve` using file watchers
-- Clean separation of code (`src`), web assets (`web`), and tooling (`jscc` submodule)
-
----
-
-## Requirements
-
-- [Docker](https://www.docker.com/get-started)
-- [docker-compose](https://docs.docker.com/compose/install/)
-- Bash shell (Linux/macOS/WSL)
-- Optional: `inotify-tools` for instant rebuilds (Linux)
-
----
-
-## CLI Usage
-
-### Initialize new project
-
-
+- Dead simple command line you can remember
+- Repeatable builds in Docker runs everywhere
+- Recompile on the fly s you can dev and test continually
+- Dead simple SPA with WASM manages EVERYTHING in C the way it should be
+- Multipage APPS are just as doable
+- Plays fine with others so you can run in production or delveopment
+- Single line of code to enter into WASM mode in either HTML or JS
+- Plumbing for using WASM as web workers, audio and video worklets
+- Seamless interactivity between JS and C using simple macros
+- Build script is one small Makefile for tinkering
+- CLI in Bash so you don't have to remember any commands
+- Raw CLANG compiling without Emscripten extras
+- Suckless methodology: Not much code. Do good stuff fast
