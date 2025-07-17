@@ -18,7 +18,7 @@ if [ -f "$DEST" ]; then
 fi
 
 REPO="${REPO:-frinknet/wacc}"
-URL="https://raw.githubusercontent.com/$REPO/main/cli/cli.sh"
+URL="https://raw.githubusercontent.com/$REPO/main/utils/cli.sh"
 TMP="$(mktemp)"
 
 if command -v curl >/dev/null; then
