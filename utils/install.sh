@@ -32,7 +32,9 @@ fi
 
 sed -i "s|^REPO=.*|REPO=\"$REPO\"|" "$TMP"
 mv "$TMP" "$DEST" && chmod +x "$DEST"
-echo "Installed to $DEST"
+
+echo
+echo "Okey dokie. Bacon smokey. No overwritingo $DEST"
 
 COMPD="/etc/bash_completion.d"
 [ -w "$COMPD" ] || COMPD="$HOME/.bash_completion.d"
@@ -52,4 +54,5 @@ complete -F _wacc_complete wacc
 EOF
 
 echo "Bash completion installed! If not live, try: source $COMPD/wacc"
+echo
 echo "Ready to WACC with tab completion—suckless style achieved."
