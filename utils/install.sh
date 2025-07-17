@@ -3,15 +3,22 @@
 DEFAULT_BIN="$HOME/bin"
 DEFAULT_NAME="wacc"
 
-# Destination logic—default to $HOME/bin/wacc, handle relative/absolute/plain names
 DEST="${1:-$DEFAULT_BIN/$DEFAULT_NAME}"
 BASEDIR="${DEST%/*}"
 [ "$BASEDIR" = "$DEST" ] && BASEDIR="."
 mkdir -p "$BASEDIR"
 
-# Download CLI
+if [ -f "$DEST" ]; then
+  printf "File %s exists. Overwrite? [y/N]: " "$DEST"
+  read ans
+  case "$ans" in
+    [yY]*) ;;
+    *) echo "Install aborted."; exit 3;;
+  esac
+fi
+
 REPO="${REPO:-frinknet/wacc}"
-URL="https://raw.githubusercontent.com/$REPO/main/utils/cli.sh"
+URL="https://raw.githubusercontent.com/$REPO/main/cli/cli.sh"
 TMP="$(mktemp)"
 
 if command -v curl >/dev/null; then
@@ -27,7 +34,6 @@ sed -i "s|^REPO=.*|REPO=\"$REPO\"|" "$TMP"
 mv "$TMP" "$DEST" && chmod +x "$DEST"
 echo "Installed to $DEST"
 
-# Bash completion
 COMPD="/etc/bash_completion.d"
 [ -w "$COMPD" ] || COMPD="$HOME/.bash_completion.d"
 mkdir -p "$COMPD"
