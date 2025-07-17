@@ -57,6 +57,6 @@ _wacc_complete() {
 complete -F _wacc_complete wacc
 EOF
 
-echo "Bash completion installed! If not live, try: source $COMPD/wacc"
+echo "Completion at $COMPD/wacc"
 echo
-echo "Ready to WACC with tab completion—suckless style achieved."
+echo "Ready to WACC it!!! Suckless style no yak shaving needed."

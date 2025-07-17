@@ -95,7 +95,7 @@ case "$CMD" in
   env)    wacc_env;;
   down)   wacc_down;;
   pack)   wacc_pack;;
-  ""|help|--help|-h) show_usage;;
+  ""|help|--help|-h) wacc_help;;
   *) show_usage; exit 1;;
 esac
 
