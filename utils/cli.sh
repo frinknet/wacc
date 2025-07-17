@@ -14,25 +14,26 @@ function wacc_check() {
 }
 
 function wacc_help() {
+  local run="${0##*/}"
+
   cat <<EOF
-  ${0^^} v${VER} // © 2025 FRINKnet & Friends
+
+  ${run^^} v${VER} // © 2025 FRINKnet & Friends
   MIT LICENSE - Suckless. Forkable. Hackable.
 
-  Usage: $0 [command]
+  Usage: $run [command]
 
-  COMMANDS:
-
-    init [dir]      Start a new WACC project in [dir] (or current directory); git initialized, README dropped.
-    dev             Run Docker dev server and open in your browser (auto-detects .env, defaults to localhost).
-    build           One-shot production build with Docker Compose—runs fast, quits clean.
-    serve           Background-deploy web server for demos or instant gratification.
-    env             Create or edit .env file—set server_name and server_address for local swagger.
-    down            Halts all Docker services so you can reclaim RAM or bask in silence.
-    pack            Build project and zip up web/ for easy distribution or smug handoff.
-  
   Dead simple WASM development environment for those who ONLY like C. 
 
-  Get in, write code, ship fast, and leave the yak unshaved!!!! B'aaaaa
+    $run init [dir]      Create a new WACC project in [dir]
+    $run dev             Start continuous build process
+    $run build           Build your WASM fresh
+    $run serve           Only run the server
+    $run env             Change your environment
+    $run down            Pencil's down heads up
+    $run pack            Pack your WASM to go
+
+  Get in, write code, ship fast, and leave the yak unshaved!!!!
 
 EOF
 }
