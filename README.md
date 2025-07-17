@@ -25,13 +25,13 @@ work in progress not quite ready for primetime but maturing fast. I've got sever
 You can do a quick install the CLI for instantly from any shel with no fuss. Just run:
 
 ```sh
-wget -qO- https://raw.githubusercontent.com/frinknet/wcc/main/utils/install.sh | sh
+wget -qO- https://raw.githubusercontent.com/frinknet/wacc/main/utils/install.sh | sh
 ```
 
 By default, this lands `wacc` in your `~/bin` directory but you can install anywhere you want and even install from your on fork.
 
 ```sh
-REPO=myuser/myfork wget -qO- https://raw.githubusercontent.com/frinknet/wcc/main/utils/install.sh | sudo sh -s /usr/local/bin/wacc
+REPO=myuser/myfork wget -qO- https://raw.githubusercontent.com/frinknet/wacc/main/utils/install.sh | sudo sh -s /usr/local/bin/wacc
 ```
 
 Because of this you can install multiple concurent version. (Although why would you want to do that???) They are simple enough that they shouldn't colide. It's all very small Bash so use the Source Luke and don't spend time on stupid tooling.

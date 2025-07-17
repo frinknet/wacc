@@ -10,8 +10,8 @@ fi
 
 mkdir -p "$BASEDIR"
 
-REPO="${REPO:-frinknet/wcc}"
-URL="https://raw.githubusercontent.com/$REPO/main/cli/cli.sh"
+REPO="${REPO:-frinknet/wacc}"
+URL="https://raw.githubusercontent.com/$REPO/main/utils/cli.sh"
 TMP="$(mktemp)"
 
 # Fetch the CLI
