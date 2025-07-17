@@ -1,0 +1,20 @@
+version: "3.8"
+services:
+  builder:
+    image: clang:15
+    working_dir: /src
+    volumes:
+      - ./src:/src
+    command: >
+      sh -c "clang --target=wasm32 -nostdlib \
+             -Wl,--no-entry -Wl,--export=malloc -Wl,--export=free \
+             -O2 -o demo.wasm demo.c"
+  web:
+    image: caddy:2
+    depends_on:
+      - builder
+    ports:
+      - "8080:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./web:/usr/share/caddy
