@@ -1,6 +1,6 @@
 # WebAssembly Concise Compiler & Server
 
-work in progress not quite ready for primetime but maturing fast.
+work in progress not quite ready for primetime but maturing fast. I've got several big commercial projects where this will be used so don't think of it as a hobby thing. Once those are live I'll post some links so that you can check out how awesome this is.
 
 ---
 
