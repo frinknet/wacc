@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 export VER="1.2"
+export REPO=""
 
 set -e
 
@@ -14,7 +15,9 @@ function wacc_check() {
 }
 
 function wacc_help() {
-  local run="${0##*/}"
+  local run
+
+  run="${0##*/}"
 
   cat <<EOF
 
@@ -27,11 +30,13 @@ function wacc_help() {
 
     $run init [dir]      Create a new WACC project in [dir]
     $run dev             Start continuous build process
+    $run module          Create a new module in WACC
     $run build           Build your WASM fresh
-    $run serve           Only run the server
     $run env             Change your environment
     $run down            Pencil's down heads up
     $run pack            Pack your WASM to go
+    $run serve           Only run the server
+    $run update          Update WACC core
 
   Get in, write code, ship fast, and leave the yak unshaved!!!!
 
@@ -42,16 +47,102 @@ function wacc_init() {
   dest="${1:-.}"
   mkdir -p "$dest"
   cd "$dest"
-  git init
-  echo "# New WACC Project" > README.md
-  echo "Initialized WACC project in $PWD"
+
+  if ! git rev-parse --is-inside-work-tree &>/dev/null; then
+    git init
+  fi
+
+  git submodule init || true
+
+  if [[ -f web/loadWASM.js && -f src/common/wacc.h && ! -d libs/wacc ]]; then
+    echo "Refusing to init: this appears to be the original WACC source repo." >&2
+    exit 3
+  fi
+
+  [[ -d libs/wacc ]] || git submodule add "$REPO" libs/wacc || true
+
+  # Minimal boilerplate dirs: can be wacc_update's job if desired
+
+  [[ -e Makefile ]] || cp -i ../Makefile .
+  [[ -e docker-compose.yaml ]] || cp -i ../docker-compose.yaml .
+  [[ -e LICENSE ]] || cp -i ../LICENSE .
+
+  # Let update do the rest (copy, symlinks, etc)
+  wacc_update
+
+  echo
+  echo "Welcome to your new game of WACC a mole!!!"
+}
+
+function wacc_update() {
+  wacc_check
+  git submodule update --init
+
+  if [[ -d libs/wacc ]]; then
+    (cd libs/wacc && git submodule update --init)
+  fi
+
+  local sub name
+  for sub in libs/wacc/libs/*; do
+    name="${sub##*/}"
+    ln -sf "$sub" "libs/$name"
+  done
+
+  mkdir -p src/common web/wasm
+
+  if [[ -d libs/wacc ]]; then
+    cp -rui libs/wacc/src/common/* src/common/
+    cp -rui libs/wacc/src/Dockerfile src/
+    cp -rui libs/wacc/web/* web/
+  fi
+
+  echo
+  echo "And now the real fun begins..."
+}
+
+function wacc_module() {
+  local template_dir module_dir templates template mod_name dest ans
+
+  template_dir="libs/wacc/src/templates"
+  module_dir="src/modules"
+
+  templates=($(ls -1 "$template_dir" 2>/dev/null | grep -vE '^\.|^_'))
+  if [[ ${#templates[@]} -eq 0 ]]; then
+    echo "No templates found. Is your WACC installed properly?"
+    exit 5
+  fi
+
+  while :; do
+    read -p "Choose a name for your new module: " mod_name
+    [[ -n "$mod_name" ]] && break
+    echo "Nameless modules wander the void. Try again."
+  done
+
+  echo "Available templates:"
+  select template in "${templates[@]}"; do
+    [[ -n "$template" ]] && break
+    echo "Try again. Pick a real number this time."
+  done
+
+  dest="$module_dir/$mod_name"
+  if [[ -e "$dest" ]]; then
+    read -p "$dest exists. Overwrite? [y/N] " ans
+    [[ ! "$ans" =~ ^[Yy]$ ]] && echo "Aborted. Module already exists." && exit 44
+    rm -rf "$dest"
+  fi
+
+  cp -r "$template_dir/$template" "$dest"
+  echo "Your $template module is ready at $dest."
 }
 
 function wacc_dev() {
   wacc_check
-  export server_domain=$(grep '^server_address=' .env 2>/dev/null | cut -d'=' -f2)
-  docker compose up
+  docker compose up -d
   url="${SERVER_ADDRESS:-localhost:80}"
+
+  echo
+  echo "You have places to be. Brace yourself for exploration..."
+  echo
   (command -v xdg-open &> /dev/null && xdg-open "$url") || echo "Open $url in your browser."
 }
 
@@ -63,25 +154,46 @@ function wacc_build() {
 function wacc_serve() {
   wacc_check
   docker compose up serve -d
+  echo
+  echo "We have liftoff!!"
 }
 
 function wacc_env() {
-  touch .env
-  read -p "server_name: " srvname
-  read -p "server_address [http://localhost:80](http://localhost:80): " srvaddr
-  echo "server_name=${srvname:=wacc}" > .env
-  echo "server_address=${srvaddr:=http://localhost:80}" >> .env
-  echo ".env set with server_name and server_address"
+  wacc_check
+  # If no arguments, show whole .env if present, else the process env
+  if [[ $# -eq 0 ]]; then
+    if [[ -f .env ]]; then
+      cat .env
+    else
+      printenv
+    fi
+  # If one argument, show value if in .env, else system env
+  elif [[ $# -eq 1 ]]; then
+    grep "^$1=" .env 2>/dev/null || printenv | grep "^$1="
+  # If two arguments, set value in .env
+  elif [[ $# -eq 2 ]]; then
+    tmpfile="$(mktemp)"
+    grep -v "^$1=" .env 2>/dev/null > "$tmpfile" || true
+    echo "$1=$2" >> "$tmpfile"
+    mv "$tmpfile" .env
+    echo "$1 set to $2"
+  else
+    echo "Usage: $0 env [VAR [VAL]]"
+    exit 1
+  fi
 }
 
 function wacc_down() {
   wacc_check
   docker compose down -d
+  echo
+  echo "Hyperdrive disengaged captain!"
 }
 
 function wacc_pack() {
   wacc_build
   zip -r "web-dist.zip" web
+  echo
   echo "Packed web directory as web-dist.zip"
 }
 
@@ -93,10 +205,12 @@ case "$CMD" in
   dev)    wacc_dev;;
   build)  wacc_build;;
   serve)  wacc_serve;;
-  env)    wacc_env;;
+  env)    wacc_env "$@";;
   down)   wacc_down;;
   pack)   wacc_pack;;
+  module)   wacc_module;;
+  update)   wacc_update;;
   ""|help|--help|-h) wacc_help;;
-  *) show_usage; exit 1;;
+  *) wacc_help; exit 1;;
 esac
 
