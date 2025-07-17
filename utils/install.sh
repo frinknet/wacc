@@ -1,20 +1,19 @@
 #!/bin/sh
 
-DEST="${1:-wacc}"
-BASEDIR="$(dirname "$DEST")"
+DEFAULT_BIN="$HOME/bin"
+DEFAULT_NAME="wacc"
 
-if [ -z "$BASEDIR" ]; then
-  DEST="$HOME/bin/$DEST"
-  BASEDIR="$HOME/bin"
-fi
-
+# Destination logic—default to $HOME/bin/wacc, handle relative/absolute/plain names
+DEST="${1:-$DEFAULT_BIN/$DEFAULT_NAME}"
+BASEDIR="${DEST%/*}"
+[ "$BASEDIR" = "$DEST" ] && BASEDIR="."
 mkdir -p "$BASEDIR"
 
+# Download CLI
 REPO="${REPO:-frinknet/wacc}"
-URL="https://raw.githubusercontent.com/$REPO/main/utils/cli.sh"
+URL="https://raw.githubusercontent.com/$REPO/main/cli/cli.sh"
 TMP="$(mktemp)"
 
-# Fetch the CLI
 if command -v curl >/dev/null; then
   curl -fsSL -o "$TMP" "$URL"
 elif command -v wget >/dev/null; then
@@ -28,15 +27,14 @@ sed -i "s|^REPO=.*|REPO=\"$REPO\"|" "$TMP"
 mv "$TMP" "$DEST" && chmod +x "$DEST"
 echo "Installed to $DEST"
 
-# Set up bash-completion
+# Bash completion
 COMPD="/etc/bash_completion.d"
 [ -w "$COMPD" ] || COMPD="$HOME/.bash_completion.d"
 mkdir -p "$COMPD"
 
-# Write a completion file
 cat > "$COMPD/wacc" <<'EOF'
 _wacc_complete() {
-  local cur prev opts
+  local cur opts
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
   opts="init dev build serve env down pack help --help -h"
@@ -48,6 +46,4 @@ complete -F _wacc_complete wacc
 EOF
 
 echo "Bash completion installed! If not live, try: source $COMPD/wacc"
-
-# Friendly ending
-echo "Ready to WACC with tab magic—and nary a yak in sight."
+echo "Ready to WACC with tab completion—suckless style achieved."
