@@ -15,7 +15,7 @@ function snark() {
 
 function wacc_check() {
   if [[ ! -f src/common/wacc.h ]]; then
-    echo "Not in a $0 project: src/common/wacc.h missing." >&2
+    echo "Not in a ${BIN^^} project: src/common/wacc.h missing." >&2
     exit 2
   fi
   set -a
@@ -48,7 +48,11 @@ EOF
 }
 
 function wacc_init() {
+  local dest wacc
+
   dest="${1:-.}"
+  wacc="$dest/libs/wacc"
+
   mkdir -p "$dest"
   cd "$dest"
 
@@ -59,42 +63,47 @@ function wacc_init() {
   git submodule init > /dev/null
 
   if [[ -f web/loadWASM.js && -f src/common/wacc.h && ! -d libs/wacc ]]; then
-    snark "DUDE - You can out WACC the WACC!!!"
+    snark "DUDE!!! - You can out ${BIN^^} the ${BIN^^}."
     snark "  $BIN init [dirname]"
-    snark "Try a new directory..." >&2
+    snark "Try initializing a new directory..." >&2
     exit 3
   fi
 
-  [[ -d libs/wacc ]] || git submodule add "https://github.com/$REPO.git" libs/wacc
-  [[ -e Makefile ]] || cp -i ../Makefile .
-  [[ -e docker-compose.yaml ]] || cp -i ../docker-compose.yaml .
-  [[ -e LICENSE ]] || cp -i ../LICENSE .
+  [[ -d $wacc ]] || git submodule add "https://github.com/$REPO.git" libs/wacc
+  [[ -e Makefile ]] || cp -i $wacc/Makefile .
+  [[ -e docker-compose.yaml ]] || cp -i $wacc/docker-compose.yaml .
+  [[ -e LICENSE ]] || cp -i $wacc/LICENSE .
 
-#wacc_update
+  mkdir -p src/common web/wasm
+
+  cp -rui $wacc/src/common/* src/common/
+  cp -rui $wacc/src/Dockerfile src/
+  cp -rui $wacc/web/* web/
 
   snark "Welcome to your new game of WACC a mole!!!"
 }
 
 function wacc_update() {
+  local wacc sub
+
   wacc_check
+
+  wacc="libs/wacc"
+
   git submodule update --init
 
-  if [[ -d libs/wacc ]]; then
-    (cd libs/wacc && git submodule update --init)
-  fi
+  if [[ -d $wacc ]]; then
+    (cd $wacc && git submodule update --init)
 
-  local sub name
-  for sub in libs/wacc/libs/*; do
-    name="${sub##*/}"
-    ln -sf "$sub" "libs/$name"
-  done
+    for sub in $wacc/libs/*; do
+      ln -sf $sub libs/${sub##*/}
+    done
 
-  mkdir -p src/common web/wasm
+    mkdir -p web/wasm
 
-  if [[ -d libs/wacc ]]; then
-    cp -rui libs/wacc/src/common/* src/common/
-    cp -rui libs/wacc/src/Dockerfile src/
-    cp -rui libs/wacc/web/* web/
+    cp -ru $wacc/src/common/* src/common/
+    cp -ru $wacc/src/Dockerfile src/
+    cp -rui $wacc/web/* web/
   fi
 
   snark "And now the real fun begins..."
