@@ -19,7 +19,8 @@ function wacc_check() {
     exit 2
   fi
   set -a
-  [ -f .env ] && source .env 2>/dev/null
+  [ -f .env ] && source .env
+  set +a
 }
 
 function wacc_help() {
@@ -199,7 +200,7 @@ function wacc_env() {
 
 function wacc_down() {
   wacc_check
-  docker compose down -d
+  docker compose down
   echo
   echo "Hyperdrive disengaged captain!"
 }
@@ -222,10 +223,11 @@ shift || true
 case "$CMD" in
   init)   wacc_init "$@";;
   dev)    wacc_dev;;
-  build)  wacc_build;;
-  serve)  wacc_serve;;
+  up)     wacc_up;;
   env)    wacc_env "$@";;
   down)   wacc_down;;
+  build)  wacc_build;;
+  check)  wacc_check;;
   pack)   wacc_pack;;
   module)   wacc_module;;
   update)   wacc_update;;
