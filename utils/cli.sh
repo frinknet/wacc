@@ -176,17 +176,17 @@ function wacc_build() {
     exit "$err"
   fi
 
-  out=$(COMPOSE_IGNORE_ORPHANS=True BUILD_ONCE=1 docker compose run --rm build "$@")
+  COMPOSE_IGNORE_ORPHANS=True BUILD_ONCE=1 docker compose run --rm build "$@"
   err=$?
 
-  echo "$out" | sed '/^$/d'
-
   if [ "$err" -ne 0 ]; then
-    snark "That build did NOT go well... What did you do?"
+    snark "That build DID NOT go well... WHAT DID YOU DO??!"
     exit $err
   fi
 
-  snark "Well... It worked I guess. Onwards and upwards!"
+  if [ "$1" != "debug" ]; then
+    snark "Well... It worked I guess. Onwards and upwards!"
+  fi
 }
 
 function wacc_serve() {
@@ -227,9 +227,11 @@ function wacc_down() {
 }
 
 function wacc_pack() {
+  local file="wacc-dist-$(date).zip"
+
   wacc_build
-  zip -r "web-dist.zip" web
-  snark "  Packed web directory as web-dist.zip"
+  zip -r $file web
+  snark "  Packed web directory as $file. Enjoy!"
 }
 
 function wacc_logs() {
@@ -247,14 +249,14 @@ shift || true
 
 case "$CMD" in
   init)   wacc_init "$@";;
-  dev)    wacc_dev;;
-  down)   wacc_down;;
-  serve)  wacc_serve;;
-  module)   wacc_module;;
-  update)   wacc_update;;
-  build)  wacc_build;;
-  pack)   wacc_pack;;
-  logs)   wacc_logs;;
+  dev)    wacc_dev "$@";;
+  down)   wacc_down "$@";;
+  serve)  wacc_serve "$@";;
+  module)   wacc_module "$@";;
+  update)   wacc_update "$@";;
+  build)  wacc_build "$@";;
+  pack)   wacc_pack "$@";;
+  logs)   wacc_logs "$@";;
   env)    wacc_env "$@";;
   ""|help|--help|-h) wacc_help;;
   *) wacc_error;;

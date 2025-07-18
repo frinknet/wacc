@@ -3,7 +3,7 @@ services:
     build:
       context: ./src
     volumes:
-      - ./:/src
+      - ./:/build
     environment:
       - BUILD_ONCE
 
