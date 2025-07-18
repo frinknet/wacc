@@ -71,11 +71,18 @@ function wacc_init() {
   fi
 
   [[ -d $wacc ]] || git submodule add "https://github.com/$REPO.git" libs/wacc
+
+  (cd $wacc && git submodule init)
+
+  mkdir -p src/common src/modules  web/wasm
+
+  for sub in $wacc/libs/*; do
+    ln -sf $sub libs/${sub##*/}
+  done
+
   [[ -e Makefile ]] || cp -i $wacc/Makefile .
   [[ -e docker-compose.yaml ]] || cp -i $wacc/docker-compose.yaml .
   [[ -e LICENSE ]] || cp -i $wacc/LICENSE .
-
-  mkdir -p src/common web/wasm
 
   cp -rui $wacc/src/common/* src/common/
   cp -rui $wacc/src/Dockerfile src/
