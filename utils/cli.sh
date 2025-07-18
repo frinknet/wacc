@@ -4,8 +4,6 @@ export REPO="frinknet/wacc"
 export VER="1.2"
 export BIN="${0##*/}"
 
-set -e
-
 function snark() {
   echo
   echo "  $1"
@@ -157,7 +155,7 @@ function wacc_module() {
 
 function wacc_dev() {
   wacc_check
-  docker compose up -d
+  COMPOSE_IGNORE_ORPHANS=True docker compose up -d
   url="${SERVER_ADDRESS:-localhost:80}"
 
   snark "You have places to be. Brace yourself for exploration..."
@@ -165,13 +163,35 @@ function wacc_dev() {
 }
 
 function wacc_build() {
+  local err out
+
   wacc_check
-  BUILD_ONCE=1 docker compose run --rm build "$@"
+  out=$(docker compose build build --progress=plain 2>&1)
+  err=$?
+
+  if [ "$err" -ne 0 ]; then
+    echo "$out" | sed '/^$/d'
+    snark "Looks like the spark plugs got lost!!!"
+    snark "Your src/Dockerfile is a MESS!!!"
+    exit "$err"
+  fi
+
+  out=$(COMPOSE_IGNORE_ORPHANS=True BUILD_ONCE=1 docker compose run --rm build "$@")
+  err=$?
+
+  echo "$out" | sed '/^$/d'
+
+  if [ "$err" -ne 0 ]; then
+    snark "That build did NOT go well... What did you do?"
+    exit $err
+  fi
+
+  snark "Well... It worked I guess. Onwards and upwards!"
 }
 
 function wacc_serve() {
   wacc_check
-  docker compose up serve -d
+  COMPOSE_IGNORE_ORPHANS=True docker compose up serve -d
   snark "We have liftoff!!"
 }
 
@@ -202,7 +222,7 @@ function wacc_env() {
 
 function wacc_down() {
   wacc_check
-  docker compose down
+  docker compose down --remove-orphans
   snark "Hyperdrive disengaged captain!"
 }
 
