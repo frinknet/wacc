@@ -56,23 +56,22 @@ function wacc_init() {
     git init
   fi
 
-  git submodule init || true
+  git submodule init > /dev/null
 
   if [[ -f web/loadWASM.js && -f src/common/wacc.h && ! -d libs/wacc ]]; then
-    snark "Refusing to init: this appears to be the original WACC source repo." >&2
+    snark "DUDE - You can out WACC the WACC!!!"
+    snark "  $BIN init [dirname]"
+    snark "Try a new directory..." >&2
     exit 3
   fi
 
   [[ -d libs/wacc ]] || git submodule add "$REPO" libs/wacc || true
 
-  # Minimal boilerplate dirs: can be wacc_update's job if desired
-
   [[ -e Makefile ]] || cp -i ../Makefile .
   [[ -e docker-compose.yaml ]] || cp -i ../docker-compose.yaml .
   [[ -e LICENSE ]] || cp -i ../LICENSE .
 
-  # Let update do the rest (copy, symlinks, etc)
-  wacc_update
+#wacc_update
 
   snark "Welcome to your new game of WACC a mole!!!"
 }
