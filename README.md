@@ -78,7 +78,7 @@ Code organization is straight fowarad in the `libs` you will find all third part
 
 The C code is built largely on macros to make things both reusable and extremely susinct. Most of the documentation should be in the header files in `src/common` and I've not yet taken time to provide extemsive documentation. The old phrase "Use the Source Luke" has always seemed a better direction than an overactive imagination in prose. I'll come back and write more later but I don't have time right now. However the headers from my end are a reasonable length and should provide everything you need.
 
-## Liscense
+## License
 
 I almost put this at BSD0 but decided that MIT is probably the most well known ad respected license. Although I have great respect for Rob Landley I feel that attribution should still be a cornerstone and therefore have put it into my work. Butt if there are Baboons out there that want to howl and quible this is a free world and you are free to do whatever. Just tell everyone where you got the code and we'll call it a day. FRINKnet is an obfixscation construct so that you can fill in your on Ur-Verb as you compare FRINK with GORETS or so the alt.fans.lemus newsgroup clained years ago. I can ttell you to do good but you're going to do what you're going to do. So use this to make a million dolars. It's fine with me.
 
