@@ -1,9 +1,17 @@
 #!/usr/bin/env bash
 
+
+export BIN="${0##*/}"
 export VER="1.2"
 export REPO=""
 
 set -e
+
+function snark() {
+  echo
+  echo "  $1"
+  echo
+}
 
 function wacc_check() {
   if [[ ! -f src/common/wacc.h ]]; then
@@ -15,28 +23,24 @@ function wacc_check() {
 }
 
 function wacc_help() {
-  local run
-
-  run="${0##*/}"
-
   cat <<EOF
 
-  ${run^^} v${VER} // © 2025 FRINKnet & Friends
+  ${BIN^^} v${VER} // © 2025 FRINKnet & Friends
   MIT LICENSE - Suckless. Forkable. Hackable.
 
-  Usage: $run [command]
+  Usage: $BIN [command]
 
   Dead simple WASM development environment for those who ONLY like C. 
 
-    $run init [dir]      Create a new WACC project in [dir]
-    $run dev             Start continuous build process
-    $run module          Create a new module in WACC
-    $run build           Build your WASM fresh
-    $run env             Change your environment
-    $run down            Pencil's down heads up
-    $run pack            Pack your WASM to go
-    $run serve           Only run the server
-    $run update          Update WACC core
+    $BIN init [dir]      Create a new WACC project in [dir]
+    $BIN dev             Start continuous build process
+    $BIN module          Create a new module in WACC
+    $BIN build           Build your WASM fresh
+    $BIN env             Change your environment
+    $BIN down            Pencil's down heads up
+    $BIN pack            Pack your WASM to go
+    $BIN serve           Only run the server
+    $BIN update          Update WACC core
 
   Get in, write code, ship fast, and leave the yak unshaved!!!!
 
@@ -55,7 +59,7 @@ function wacc_init() {
   git submodule init || true
 
   if [[ -f web/loadWASM.js && -f src/common/wacc.h && ! -d libs/wacc ]]; then
-    echo "Refusing to init: this appears to be the original WACC source repo." >&2
+    snark "Refusing to init: this appears to be the original WACC source repo." >&2
     exit 3
   fi
 
@@ -70,8 +74,7 @@ function wacc_init() {
   # Let update do the rest (copy, symlinks, etc)
   wacc_update
 
-  echo
-  echo "Welcome to your new game of WACC a mole!!!"
+  snark "Welcome to your new game of WACC a mole!!!"
 }
 
 function wacc_update() {
@@ -96,8 +99,7 @@ function wacc_update() {
     cp -rui libs/wacc/web/* web/
   fi
 
-  echo
-  echo "And now the real fun begins..."
+  snark "And now the real fun begins..."
 }
 
 function wacc_module() {
@@ -106,44 +108,50 @@ function wacc_module() {
   template_dir="libs/wacc/src/templates"
   module_dir="src/modules"
 
-  templates=($(ls -1 "$template_dir" 2>/dev/null | grep -vE '^\.|^_'))
-  if [[ ${#templates[@]} -eq 0 ]]; then
-    echo "No templates found. Is your WACC installed properly?"
+  if [[ ! -d libs/wacc ]]; then
+    snark "You are not in a WACC project... Where are you?"
     exit 5
   fi
 
-  while :; do
+  templates=($(ls -1 "$template_dir" 2>/dev/null | grep -vE '^\.|^_'))
+
+  if [[ ${#templates[@]} -eq 0 ]]; then
+    snark "Um... What's up with your libs/WACC?"
+    snark "There is nothing there!!!"
+    exit 5
+  fi
+
+  while true; do
     read -p "Choose a name for your new module: " mod_name
     [[ -n "$mod_name" ]] && break
-    echo "Nameless modules wander the void. Try again."
+    snark "Nameless modules wander the void. Try again."
   done
 
-  echo "Available templates:"
+  snark "Available templates:"
   select template in "${templates[@]}"; do
     [[ -n "$template" ]] && break
-    echo "Try again. Pick a real number this time."
+    snark "Try again. Pick a real number this time."
   done
 
   dest="$module_dir/$mod_name"
   if [[ -e "$dest" ]]; then
     read -p "$dest exists. Overwrite? [y/N] " ans
-    [[ ! "$ans" =~ ^[Yy]$ ]] && echo "Aborted. Module already exists." && exit 44
+    [[ ! "$ans" =~ ^[Yy]$ ]] && snark "Aborted. Module already exists." && exit 44
     rm -rf "$dest"
   fi
 
   cp -r "$template_dir/$template" "$dest"
-  echo "Your $template module is ready at $dest."
+  snark "Your $template module is ready at $dest."
 }
+
 
 function wacc_dev() {
   wacc_check
   docker compose up -d
   url="${SERVER_ADDRESS:-localhost:80}"
 
-  echo
-  echo "You have places to be. Brace yourself for exploration..."
-  echo
-  (command -v xdg-open &> /dev/null && xdg-open "$url") || echo "Open $url in your browser."
+  snark "You have places to be. Brace yourself for exploration..."
+  (command -v xdg-open &> /dev/null && xdg-open "$url") || echo "  Open $url in your browser."
 }
 
 function wacc_build() {
@@ -154,8 +162,7 @@ function wacc_build() {
 function wacc_serve() {
   wacc_check
   docker compose up serve -d
-  echo
-  echo "We have liftoff!!"
+  snark "We have liftoff!!"
 }
 
 function wacc_env() {
@@ -193,8 +200,13 @@ function wacc_down() {
 function wacc_pack() {
   wacc_build
   zip -r "web-dist.zip" web
-  echo
-  echo "Packed web directory as web-dist.zip"
+  snark "  Packed web directory as web-dist.zip"
+}
+
+function wacc_error() {
+  snark "Um... Did you even READ the manual???"
+  snark "   $BIN help"
+  snark "Go ask for help like a good little grimlin."
 }
 
 CMD="$1"
@@ -211,6 +223,6 @@ case "$CMD" in
   module)   wacc_module;;
   update)   wacc_update;;
   ""|help|--help|-h) wacc_help;;
-  *) wacc_help; exit 1;;
+  *) wacc_error;;
 esac
 
