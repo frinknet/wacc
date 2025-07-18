@@ -3,7 +3,7 @@
 
 export BIN="${0##*/}"
 export VER="1.2"
-export REPO=""
+export REPO="frinknet/wacc"
 
 set -e
 
@@ -65,8 +65,7 @@ function wacc_init() {
     exit 3
   fi
 
-  [[ -d libs/wacc ]] || git submodule add "$REPO" libs/wacc || true
-
+  [[ -d libs/wacc ]] || git submodule add "https://github.com/$REPO.git" libs/wacc
   [[ -e Makefile ]] || cp -i ../Makefile .
   [[ -e docker-compose.yaml ]] || cp -i ../docker-compose.yaml .
   [[ -e LICENSE ]] || cp -i ../LICENSE .
