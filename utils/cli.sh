@@ -62,7 +62,7 @@ function wacc_init() {
 
   git submodule init > /dev/null
 
-  if [[ -f web/loadWASM.js && -f src/common/wacc.h && ! -d libs/wacc ]]; then
+  if [[ -f web/loadWASM.js && -f src/common/wacc.h ]]; then
     snark "DUDE!!! - You can out ${BIN^^} the ${BIN^^}."
     snark "  $BIN init [dirname]"
     snark "Try initializing a new directory..." >&2
