@@ -30,7 +30,7 @@ function wacc_help() {
 
   Usage: $BIN [command]
 
-  Dead simple WASM development environment for those who ONLY like C. 
+  Dead simple WASM dev environment for those who ONLY like C/C++ 
 
     $BIN init [dir]      Create a new WACC project in [dir]
     $BIN dev             Start continuous build process
