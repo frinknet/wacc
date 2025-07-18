@@ -1,6 +1,6 @@
-FROM clang:15
+FROM bash:latest
 
-RUN apt-get update && apt-get install -y make inotify-tools && rm -rf /var/lib/apt/lists/*
+RUN apk add clang make inotify-tools
 
 WORKDIR /src
 

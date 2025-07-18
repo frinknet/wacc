@@ -8,7 +8,7 @@ services:
       - BUILD_ONCE
 
   serve:
-    image: caddy:2
+    image: caddy:alpine
     ports:
       - "80:80"
       - "443:443"

@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
-
-export BIN="${0##*/}"
-export VER="1.2"
 export REPO="frinknet/wacc"
+export VER="1.2"
+export BIN="${0##*/}"
 
 set -e
 
@@ -35,13 +34,13 @@ function wacc_help() {
 
     $BIN init [dir]      Create a new WACC project in [dir]
     $BIN dev             Start continuous build process
-    $BIN module          Create a new module in WACC
-    $BIN build           Build your WASM fresh
-    $BIN env             Change your environment
     $BIN down            Pencil's down heads up
-    $BIN pack            Pack your WASM to go
     $BIN serve           Only run the server
+    $BIN module          Create a new module in WACC
     $BIN update          Update WACC core
+    $BIN build           Build your WASM fresh
+    $BIN pack            Pack your WASM to go
+    $BIN env             Change your environment
 
   Get in, write code, ship fast, and leave the yak unshaved!!!!
 
@@ -52,41 +51,33 @@ function wacc_init() {
   local dest wacc
 
   dest="${1:-.}"
-  wacc="$dest/libs/wacc"
+  wacc="libs/wacc"
 
   mkdir -p "$dest"
   cd "$dest"
-
-  if ! git rev-parse --is-inside-work-tree &>/dev/null; then
-    git init
-  fi
-
-  git submodule init > /dev/null
+  mkdir -p src/common src/modules web/wasm
+  git rev-parse --is-inside-work-tree &>/dev/null || git init --quiet
+  git submodule update --init --recursive --depth 1
 
   if [[ -f web/loadWASM.js && -f src/common/wacc.h ]]; then
-    snark "DUDE!!! - You can out ${BIN^^} the ${BIN^^}."
+    snark "DUDE!!! - You can't out ${BIN^^} the ${BIN^^}"
     snark "  $BIN init [dirname]"
-    snark "Try initializing a new directory..." >&2
+    snark "Try initializing a new directory instead..." >&2
     exit 3
   fi
 
-  [[ -d $wacc ]] || git submodule add "https://github.com/$REPO.git" libs/wacc
+  snark "Liet's get this party started..."
 
-  (cd $wacc && git submodule init)
+  [[ -d $wacc ]] || git submodule add https://github.com/$REPO.git libs/wacc
+  git submodule update --init --recursive --depth 1
 
-  mkdir -p src/common src/modules  web/wasm
-
-  for sub in $wacc/libs/*; do
-    ln -sf $sub libs/${sub##*/}
-  done
-
-  [[ -e Makefile ]] || cp -i $wacc/Makefile .
-  [[ -e docker-compose.yaml ]] || cp -i $wacc/docker-compose.yaml .
-  [[ -e LICENSE ]] || cp -i $wacc/LICENSE .
+  mkdir -p src/common src/modules web/wasm
 
   cp -rui $wacc/src/common/* src/common/
   cp -rui $wacc/src/Dockerfile src/
   cp -rui $wacc/web/* web/
+
+  wacc_update
 
   snark "Welcome to your new game of WACC a mole!!!"
 }
@@ -98,23 +89,25 @@ function wacc_update() {
 
   wacc="libs/wacc"
 
-  git submodule update --init
-
   if [[ -d $wacc ]]; then
-    (cd $wacc && git submodule update --init)
+    git submodule update --init --recursive --depth 1
 
     for sub in $wacc/libs/*; do
       ln -sf $sub libs/${sub##*/}
     done
 
-    mkdir -p web/wasm
+    mkdir -p src/common src/modules web/wasm
 
-    cp -ru $wacc/src/common/* src/common/
-    cp -ru $wacc/src/Dockerfile src/
+    cp -ui $wacc/Makefile .
+    cp -ui $wacc/docker-compose.yaml .
+    cp -ui $wacc/LICENSE .
+
+    cp -rui $wacc/src/common/* src/common/
+    cp -rui $wacc/src/Dockerfile src/
     cp -rui $wacc/web/* web/
   fi
 
-  snark "And now the real fun begins..."
+  snark "UP TO DATE!!! - And now the real fun begins..."
 }
 
 function wacc_module() {
@@ -208,14 +201,17 @@ function wacc_env() {
 function wacc_down() {
   wacc_check
   docker compose down
-  echo
-  echo "Hyperdrive disengaged captain!"
+  snark "Hyperdrive disengaged captain!"
 }
 
 function wacc_pack() {
   wacc_build
   zip -r "web-dist.zip" web
   snark "  Packed web directory as web-dist.zip"
+}
+
+function wacc_logs() {
+  docker compose logs
 }
 
 function wacc_error() {
@@ -230,14 +226,14 @@ shift || true
 case "$CMD" in
   init)   wacc_init "$@";;
   dev)    wacc_dev;;
-  up)     wacc_up;;
-  env)    wacc_env "$@";;
   down)   wacc_down;;
-  build)  wacc_build;;
-  check)  wacc_check;;
-  pack)   wacc_pack;;
+  serve)  wacc_serve;;
   module)   wacc_module;;
   update)   wacc_update;;
+  build)  wacc_build;;
+  pack)   wacc_pack;;
+  logs)   wacc_logs;;
+  env)    wacc_env "$@";;
   ""|help|--help|-h) wacc_help;;
   *) wacc_error;;
 esac
