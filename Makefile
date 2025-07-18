@@ -1,16 +1,18 @@
-CC = clang
-CFLAGS = --target=wasm32-wasi -O2 -nostdlib -Wl,--no-entry -Wl,--export-all
-INCLUDES = -Isrc/common
-SRC_DIR = src/modules
-OUT_DIR = web/wasm
-MODULES = $(basename $(notdir $(wildcard $(SRC_DIR)/**/*.c)))
-WASM_TARGETS = $(addprefix $(OUT_DIR)/, $(addsuffix .wasm, $(MODULES)))
+WASI_SDK_PATH ?= /opt/wasi-sdk
+CC	      = $(WASI_SDK_PATH)/bin/clang
+SYSROOT       = --sysroot=$(WASI_SDK_PATH)/share/wasi-sysroot
+CFLAGS	      = --target=wasm32-wasi $(SYSROOT) -O2 -Isrc/common -Wl,--export-all -Wl,--no-entry
+MODULE_DIRS   := $(wildcard src/modules/*)
+MODULES       := $(notdir $(MODULE_DIRS))
+OUT_DIR       = web/wasm
 
-all: $(WASM_TARGETS)
+.PHONY: $(MODULES) all clean
 
-$(OUT_DIR)/%.wasm: $(SRC_DIR)/**/%.c
-	@mkdir -p $(OUT_DIR)
-	$(CC) $(CFLAGS) $(INCLUDES) $< -o $@
+all: $(MODULES)
+
+$(MODULES):
+	$(CC) $(CFLAGS) $(shell find src/modules/$@ -name '*.c') -o $(OUT_DIR)/$@.wasm
 
 clean:
 	rm -f $(OUT_DIR)/*.wasm
+

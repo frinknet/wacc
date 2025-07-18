@@ -4,4 +4,4 @@ RUN apk add clang make inotify-tools
 
 WORKDIR /src
 
-CMD ["/src/utils/build.sh"]
+ENTRYPOINT ["/src/utils/build.sh"]

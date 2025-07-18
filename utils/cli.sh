@@ -32,15 +32,17 @@ function wacc_help() {
 
   Dead simple WASM dev environment for those who ONLY like C/C++ 
 
-    $BIN init [dir]      Create a new WACC project in [dir]
-    $BIN dev             Start continuous build process
-    $BIN down            Pencil's down heads up
-    $BIN serve           Only run the server
-    $BIN module          Create a new module in WACC
-    $BIN update          Update WACC core
-    $BIN build           Build your WASM fresh
-    $BIN pack            Pack your WASM to go
-    $BIN env             Change your environment
+  $BIN init [dir]           Create a new WACC project in [dir]
+  $BIN dev                  Start continuous build. Change are rebuilt.
+  $BIN down                 Pencil's down heads up turn off the server
+  $BIN serve [module]       Only run server and  jump to a module link
+  $BIN module [type]        Create a new module of the type sepcified
+  $BIN update               Update your code to fix customizations
+  $BIN upgrade              Upgrade the core to the latest WACC code
+  $BIN build [modules]      Quickly build only the modules you specify
+  $BIN pack [modules]       Package the modules you specify in a zip
+  $BIN logs [serve|build]   Show either the serve logs or build logs
+  $BIN env [name] [value]   Change your environment
 
   Get in, write code, ship fast, and leave the yak unshaved!!!!
 
@@ -164,7 +166,7 @@ function wacc_dev() {
 
 function wacc_build() {
   wacc_check
-  BUILD_ONCE=1 docker compose up --build build
+  BUILD_ONCE=1 docker compose run --rm build "$@"
 }
 
 function wacc_serve() {
