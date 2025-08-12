@@ -40,8 +40,8 @@ function wacc_help() {
   $BIN down                 Pencil's down heads up turn off the server
   $BIN serve [module]       Only run server and  jump to a module link
   $BIN module [type]        Create a new module of the type sepcified
-  $BIN update               Update your code to fix customizations
-  $BIN upgrade              Upgrade the core to the latest WACC code
+  $BIN update               Update your code to the latest WACC core
+  $BIN upgrade              Upgrade this binary to the latest version
   $BIN build [modules]      Quickly build only the modules you specify
   $BIN pack [modules]       Package the modules you specify in a zip
   $BIN logs [serve|build]   Show either the serve logs or build logs
@@ -71,17 +71,13 @@ function wacc_init() {
     exit 3
   fi
 
-  snark "Liet's get this party started..."
+  snark "Let's get this party started..."
 
   [[ -d $wacc ]] || git submodule add https://github.com/$REPO.git libs/wacc
 
   wacc_update
 
   snark "Welcome to your new game of WACC a mole!!!"
-}
-
-function wacc_upgrade() {
-  snark "This doesn't work yet. It should reinstall the binary."
 }
 
 function wacc_update() {
@@ -111,6 +107,10 @@ function wacc_update() {
   fi
 
   snark "UP TO DATE!!! - And now the real fun begins..."
+}
+
+function wacc_upgrade() {
+  snark "This doesn't work yet. It should reinstall the binary."
 }
 
 function wacc_module() {
