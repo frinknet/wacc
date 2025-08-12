@@ -1,5 +1,5 @@
-#ifndef WACC_H
-#define WACC_H
+#ifndef JSCC_H
+#define JSCC_H
 
 // (c) 2025 FRINKnet & Friends - MIT licence
 
@@ -149,5 +149,5 @@ void init(void) {
 }
 #endif
 
-#endif /* WACC_H */
+#endif /* JSCC_H */
 
