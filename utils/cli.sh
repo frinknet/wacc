@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -o pipefail
+
 export REPO="frinknet/wacc"
 export VER="1.2"
 export BIN="${0##*/}"
@@ -86,6 +88,7 @@ function wacc_upgrade() {
   wacc="libs/wacc"
 
   git submodule update --init --recursive --depth 1
+  git submodule update --remote --merge
 
   mkdir -p src/common src/modules web/wasm
 
@@ -181,11 +184,10 @@ function wacc_build() {
   local err out
 
   wacc_check
-  out=$(docker compose build build 2>&1)
+  docker compose build build 2>&1 | sed '/^$/d'
   err=$?
 
   if [ "$err" -ne 0 ]; then
-    echo "$out" | sed '/^$/d'
     snark "Looks like the spark plugs got lost!!!"
     snark "Your src/Dockerfile is a MESS!!!"
     exit "$err"

@@ -1,5 +1,5 @@
-iCC	      ?= clang
-TARGET	     := wasm32-unknown-unknown
+CC	     := clang
+TARGET	     := wasm32
 CFLAGS	     := --target=$(TARGET) -O2 -Isrc/common -Wl,--export-all -Wl,--no-entry
 MODULE_DIRS  := $(wildcard src/modules/*)
 MODULES      := $(notdir $(MODULE_DIRS))
