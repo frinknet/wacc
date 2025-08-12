@@ -75,30 +75,13 @@ function wacc_init() {
 
   [[ -d $wacc ]] || git submodule add https://github.com/$REPO.git libs/wacc
 
-  wacc_upgrade
+  wacc_update
 
   snark "Welcome to your new game of WACC a mole!!!"
 }
 
 function wacc_upgrade() {
-  local wacc sub
-
-  wacc_check
-
-  wacc="libs/wacc"
-
-  git submodule update --init --recursive --depth 1
-  git submodule update --remote --merge
-
-  mkdir -p src/common src/modules web/wasm
-
-  cp -rui $wacc/src/common/* src/common/
-  cp -rui $wacc/src/Dockerfile src/
-  cp -rui $wacc/web/* web/
-
-  wacc_update
-
-  snark "And now you have new things to play with..."
+  snark "This doesn't work yet. It should reinstall the binary."
 }
 
 function wacc_update() {
@@ -110,6 +93,7 @@ function wacc_update() {
 
   if [[ -d $wacc ]]; then
     git submodule update --init --recursive --depth 1
+  git submodule update --remote --merge
 
     for sub in $wacc/libs/*; do
       ln -sf $sub libs/${sub##*/}
