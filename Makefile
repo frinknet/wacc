@@ -1,5 +1,3 @@
-SHELL := bash
-
 CC := clang
 LJ := luajit
 
@@ -20,13 +18,14 @@ TOOLS := \
 	$(TOOL_COMP) \
 	$(TOOL_GLSL)
 
-LIB_JSCC   := libs/jscc
-LIB_IMGUI  := libs/imgui
-LIB_CIMGUI := libs/cimgui
-LIB_MINQND := libs/MinQND-libc
+LIB_JSCC   := lib/jscc
+LIB_SOKOL  := lib/sokol
+LIB_IMGUI  := lib/imgui
+LIB_CIMGUI := lib/cimgui
 
 LIBRARIES := \
 	$(LIB_JSCC) \
+	$(LIB_SOKOL) \
 	$(LIB_IMGUI) \
 	$(LIB_CIMGUI)
 
@@ -39,20 +38,20 @@ SRC_SHADER := src/shaders
 
 SOURCES := \
 	$(SRC_GENOUT) \
+	$(SRC_LUAGEN) \
 	$(SRC_COMMON) \
 	$(SRC_ASSETS) \
 	$(SRC_MODULE) \
 	$(SRC_SHADER)
 
+ASSETS := $(wildcard $(SRC_ASSETS}/*)
+
 COMMONS := \
-	$(SRC_COMMON)/jscc.h \
 	$(SRC_COMMON)/jscc.h \
 	$(SRC_COMMON)/cimgui.cpp \
 	$(SRC_COMMON)/cimgui.h
 
-MODULES := $(notdir $(wildcard $(SRC_MODULE)/*))
-
-FONTS := $(patsubst $(SRC_ASSETS)/%,$(SRC_ASSETS)/font_$(call embed_name,%).h,$(wildcard $(SRC_ASSETS)/*.[toTO][tT][fF]))
+MODULES := $(notdir $(wildcard $(SRC_MODULE}/*))
 
 OUT_WASM := web/wasm
 
@@ -70,17 +69,21 @@ define BASH_FUNC_say%%
 endef
 export BASH_FUNC_say%%
 
-embed_name = $(shell echo "$(basename $(1))" | sed 's/[.]ttf$$//i; s/ /_/g; y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/')
+lowercase=$(subst -,_,$(subst A,a,$(subst B,b,$(subst C,c,$(subst D,d,$(subst E,e,$(subst F,f,$(subst G,g,$(subst H,h,$(subst I,i,$(subst J,j,$(subst K,k,$(subst L,l,$(subst M,m,$(subst N,n,$(subst O,o,$(subst P,p,$(subst Q,q,$(subst R,r,$(subst S,s,$(subst T,t,$(subst U,u,$(subst V,v,$(subst W,w,$(subst X,x,$(subst Y,y,$(subst Z,z,$1)))))))))))))))))))))))))))
+lcasefont=$(patsubst $(SRC_ASSETS)/%.ttf,font_%,$(call lowercase,$1))
+fontnameh=$(SRC_ASSETS)/$(call lcasefont,$1).h
+glslnameh=$(patsubst $(SRC_SHADER)/%.glsl,$(SRC_SHADER)/glsl_%.h,$1)
+
+embed_file=$(TOOL_EMBED) -base85 $1 $2 > $3;
+shade_glsl=$(BIN_TOOL)/sokol-shdc --input $1 --output $2 --slang $3;
 
 .PHONY: all clean $(MODULES)
 all: modules
 
 modules: $(MODULES)
-$(MODULES): 
-	@say GEN $(OUT_WASM)/$@.wasm
-	@$(CC) $(CFLAGS) $(wildcard $(SRC_MODULE)/$@/*.c) -o $(OUT_WASM)/$@.wasm
-
-$(addsuffix .wasm,$(MODULES)): $(foreach m,$(MODULES),$(wildcard $(SRC_MODULE)/$m/*.c))
+$(MODULES):
+	@say GEN $(DIR_OUTPUT)/$@.wasm 
+	@$(CC) $(CFLAGS) $(shell find $(DIR_MODULE}/$@ -name '*.c') -o $(DIR_OUTPUT)/$@.wasm
 
 libraries: $(LIBRARIES)
 $(LIBRARIES): 
@@ -93,9 +96,9 @@ $(SOURCES):
 	@mkdir -p $@
 
 fonts: $(FONTS)
-$(SRC_ASSETS)/font_%.h: $(SRC_ASSETS)/%.[toTO][tT][fF] $(TOOL_EMBED)
+$(FONTS): $(BIN_TOOL)/bin2comp $(BIN_TOOL)
 	@say GEN $@
-	@$(TOOL_EMBED) $< font_$(call embed_name,$<) > $@
+	@$(foreach font, $(SRC_ASSETS), $(call embed_file,$(font),$(call lcasefont,$(font)),$(call fontnameh,$(font))))
 
 tools: $(TOOLS)
 
