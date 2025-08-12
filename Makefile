@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-CC	     := clang
-TARGET	     := wasm32
-CFLAGS	     := --target=$(TARGET) -O2 -Ilibs/cimgui  -Ilibs/MinQND-libc -Ilibs/wacc/src/common -Isrc/common -Wl,--export-all -Wl,--no-entry
-MODULE_DIRS  := $(wildcard src/modules/*)
-MODULES      := $(notdir $(MODULE_DIRS))
-OUT_DIR      := web/wasm
-=======
 CC := clang
 LJ := luajit
 
@@ -84,7 +76,6 @@ glslnameh=$(patsubst $(SRC_SHADER)/%.glsl,$(SRC_SHADER)/glsl_%.h,$1)
 
 embed_file=$(TOOL_EMBED) -base85 $1 $2 > $3;
 shade_glsl=$(BIN_TOOL)/sokol-shdc --input $1 --output $2 --slang $3;
->>>>>>> 3744021 (major make breaking changes)
 
 .PHONY: all clean $(MODULES)
 all: modules
