@@ -72,6 +72,19 @@ function wacc_init() {
   snark "Liet's get this party started..."
 
   [[ -d $wacc ]] || git submodule add https://github.com/$REPO.git libs/wacc
+
+  wacc_upgrade
+
+  snark "Welcome to your new game of WACC a mole!!!"
+}
+
+function wacc_upgrade() {
+  local wacc sub
+
+  wacc_check
+
+  wacc="libs/wacc"
+
   git submodule update --init --recursive --depth 1
 
   mkdir -p src/common src/modules web/wasm
@@ -82,7 +95,7 @@ function wacc_init() {
 
   wacc_update
 
-  snark "Welcome to your new game of WACC a mole!!!"
+  snark "And now you have new things to play with..."
 }
 
 function wacc_update() {
@@ -248,16 +261,17 @@ function wacc_error() {
 
 # Run the command
 case "$CMD" in
-  init)   wacc_init "$@";;
-  dev)    wacc_dev "$@";;
-  down)   wacc_down "$@";;
-  serve)  wacc_serve "$@";;
-  module)   wacc_module "$@";;
-  update)   wacc_update "$@";;
-  build)  wacc_build "$@";;
-  pack)   wacc_pack "$@";;
-  logs)   wacc_logs "$@";;
-  env)    wacc_env "$@";;
+  init)    wacc_init "$@";;
+  dev)     wacc_dev "$@";;
+  down)    wacc_down "$@";;
+  serve)   wacc_serve "$@";;
+  module)  wacc_module "$@";;
+  update)  wacc_update "$@";;
+  upgrade) wacc_upgrade "$@";;
+  build)   wacc_build "$@";;
+  pack)    wacc_pack "$@";;
+  logs)    wacc_logs "$@";;
+  env)     wacc_env "$@";;
   ""|help|--help|-h) wacc_help;;
   *) wacc_error;;
 esac
