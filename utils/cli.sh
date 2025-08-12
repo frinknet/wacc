@@ -64,7 +64,7 @@ function wacc_init() {
   git rev-parse --is-inside-work-tree &>/dev/null || git init --quiet
   git submodule update --init --recursive --depth 1
 
-  if [[ -f web/loadWASM.js && -f src/common/wacc.h ]]; then
+  if [[ -f web/loadWASM.js && -f src/common/jscc.h ]]; then
     snark "DUDE!!! - You can't out ${BIN^^} the ${BIN^^}"
     snark "  $BIN init [dirname]"
     snark "Try initializing a new directory instead..." >&2
@@ -100,7 +100,6 @@ function wacc_update() {
     cp -ui $wacc/docker-compose.yaml .
     cp -ui $wacc/LICENSE .
 
-    cp -rui $wacc/src/common/* src/common/
     cp -rui $wacc/src/Dockerfile src/
     cp -rui $wacc/web/* web/
   fi
