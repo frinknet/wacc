@@ -155,7 +155,6 @@ function wacc_module() {
   snark "Your $template module is ready at $dest."
 }
 
-
 function wacc_dev() {
   wacc_check
   COMPOSE_IGNORE_ORPHANS=True docker compose up -d
