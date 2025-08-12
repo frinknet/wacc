@@ -88,8 +88,7 @@ function wacc_update() {
   wacc="libs/wacc"
 
   if [[ -d $wacc ]]; then
-    git submodule update --init --recursive --depth 1
-  git submodule update --remote --merge
+    git submodule update --remote --rebase
 
     for sub in $wacc/libs/*; do
       ln -sf $sub libs/${sub##*/}
