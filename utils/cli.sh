@@ -16,8 +16,8 @@ function snark() {
 }
 
 function wacc_check() {
-  if [[ ! -f src/common/wacc.h ]]; then
-    echo "Not in a ${BIN^^} project: src/common/wacc.h missing." >&2
+  if [[ ! -e src/common/jscc.h ]]; then
+    echo "Not in a ${BIN^^} project: src/common/jscc.h missing." >&2
     exit 2
   fi
   set -a
