@@ -1,13 +1,11 @@
-WASI_SDK_PATH ?= /opt/wasi-sdk
-CC	      = $(WASI_SDK_PATH)/bin/clang
-SYSROOT       = --sysroot=$(WASI_SDK_PATH)/share/wasi-sysroot
-CFLAGS	      = --target=wasm32-wasi $(SYSROOT) -O2 -Isrc/common -Wl,--export-all -Wl,--no-entry
-MODULE_DIRS   := $(wildcard src/modules/*)
-MODULES       := $(notdir $(MODULE_DIRS))
-OUT_DIR       = web/wasm
+iCC	      ?= clang
+TARGET	     := wasm32-unknown-unknown
+CFLAGS	     := --target=$(TARGET) -O2 -Isrc/common -Wl,--export-all -Wl,--no-entry
+MODULE_DIRS  := $(wildcard src/modules/*)
+MODULES      := $(notdir $(MODULE_DIRS))
+OUT_DIR      := web/wasm
 
-.PHONY: $(MODULES) all clean
-
+.PHONY: all clean $(MODULES)
 all: $(MODULES)
 
 $(MODULES):
@@ -15,4 +13,3 @@ $(MODULES):
 
 clean:
 	rm -f $(OUT_DIR)/*.wasm
-

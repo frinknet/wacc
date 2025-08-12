@@ -3,6 +3,9 @@
 export REPO="frinknet/wacc"
 export VER="1.2"
 export BIN="${0##*/}"
+export CMD="$1"
+shift || true
+
 
 function snark() {
   echo
@@ -156,7 +159,7 @@ function wacc_module() {
 function wacc_dev() {
   wacc_check
   COMPOSE_IGNORE_ORPHANS=True docker compose up -d
-  url="${SERVER_ADDRESS:-localhost:80}"
+  url="http://${SERVER_ADDRESS:-localhost:80}"
 
   snark "You have places to be. Brace yourself for exploration..."
   (command -v xdg-open &> /dev/null && xdg-open "$url") || echo "  Open $url in your browser."
@@ -166,7 +169,7 @@ function wacc_build() {
   local err out
 
   wacc_check
-  out=$(docker compose build build --progress=plain 2>&1)
+  out=$(docker compose build build 2>&1)
   err=$?
 
   if [ "$err" -ne 0 ]; then
@@ -244,9 +247,7 @@ function wacc_error() {
   snark "Go ask for help like a good little grimlin."
 }
 
-CMD="$1"
-shift || true
-
+# Run the command
 case "$CMD" in
   init)   wacc_init "$@";;
   dev)    wacc_dev "$@";;
@@ -261,4 +262,3 @@ case "$CMD" in
   ""|help|--help|-h) wacc_help;;
   *) wacc_error;;
 esac
-

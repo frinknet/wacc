@@ -1,12 +1,12 @@
-{$SERVER_ADDRESS=:80} {
-	header Server "{$SERVER_NAME=WACC}"
+{$SERVER_ADDRESS::80} {
+	header Server "{$SERVER_NAME:WACC}"
 
-	root * /srv/web
+	root * /etc/caddy
 	encode zstd gzip
 	file_server
 
 	handle_path /wasm/*.wasm {
-		root * /srv/web/wasm
+		root * /etc/caddy/wasm
 		header Cache-Control "public, max-age=31536000, immutable"
 	}
 
