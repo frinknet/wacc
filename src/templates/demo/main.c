@@ -1,4 +1,4 @@
-#include "wacc.h"
+#include "jscc.h"
 #include "cimgui.h"
 
 JS_EXPOSE("main")

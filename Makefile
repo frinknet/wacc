@@ -1,13 +1,7 @@
+SHELL := bash
+
 CC := clang
 LJ := luajit
-
-TARGET := wasm32
-CFLAGS := --target=$(TARGET) -O2 \
-	-I$(SRC_COMMON) \
-	-I$(SRC_ASSETS) \
-	-I$(SRC_SHADER) \
-	-Wl,--export-all \
-	-Wl,--no-entry
 
 BIN_TOOL := utils/extras
 
@@ -18,45 +12,55 @@ TOOLS := \
 	$(TOOL_COMP) \
 	$(TOOL_GLSL)
 
-LIB_JSCC   := lib/jscc
-LIB_SOKOL  := lib/sokol
-LIB_IMGUI  := lib/imgui
-LIB_CIMGUI := lib/cimgui
+LIB_DIR    := libs
+LIB_JSCC   := libs/jscc
+LIB_IMGUI  := libs/imgui
+LIB_CIMGUI := libs/cimgui
+LIB_MINQND := libs/MinQND
 
 LIBRARIES := \
 	$(LIB_JSCC) \
-	$(LIB_SOKOL) \
 	$(LIB_IMGUI) \
 	$(LIB_CIMGUI)
 
+SRC_DIR    := src
 SRC_LUAGEN := src/generator
-SRC_GENOUT := $(SRC_LUAGEN)/output
 SRC_COMMON := src/common
 SRC_ASSETS := src/assets
 SRC_MODULE := src/modules
 SRC_SHADER := src/shaders
 
 SOURCES := \
-	$(SRC_GENOUT) \
-	$(SRC_LUAGEN) \
 	$(SRC_COMMON) \
 	$(SRC_ASSETS) \
 	$(SRC_MODULE) \
 	$(SRC_SHADER)
 
-ASSETS := $(wildcard $(SRC_ASSETS}/*)
+CIMGUI = \
+	$(SRC_COMMON)/cimgui.cpp \
+	$(SRC_COMMON)/cimgui.h \
+	$(SRC_COMMON)/cimgui_impl.cpp \
+	$(SRC_COMMON)/cimgui_impl.h 
 
 COMMONS := \
 	$(SRC_COMMON)/jscc.h \
-	$(SRC_COMMON)/cimgui.cpp \
-	$(SRC_COMMON)/cimgui.h
+	$(CIMGUI)
 
-MODULES := $(notdir $(wildcard $(SRC_MODULE}/*))
+MODULES := $(notdir $(wildcard $(SRC_MODULE)/*))
+
+FONTS := $(patsubst $(SRC_ASSETS)/%,$(SRC_ASSETS)/font_$(call embed_name,%).h,$(wildcard $(SRC_ASSETS)/*.[toTO][tT][fF]))
 
 OUT_WASM := web/wasm
 
-OUTPUTS := \
-	$(OUT_WASM)
+OUTPUTS := $(addprefix $(OUT_WASM)/,$(addsuffix .wasm,$(MODULES)))
+
+TARGET := wasm32
+CFLAGS := --target=$(TARGET) -O2 \
+	-I$(SRC_COMMON) \
+	-I$(SRC_ASSETS) \
+	-I$(SRC_SHADER) \
+	-Wl,--export-all \
+	-Wl,--no-entry
 
 define BASH_FUNC_say%%
 () {
@@ -69,21 +73,21 @@ define BASH_FUNC_say%%
 endef
 export BASH_FUNC_say%%
 
-lowercase=$(subst -,_,$(subst A,a,$(subst B,b,$(subst C,c,$(subst D,d,$(subst E,e,$(subst F,f,$(subst G,g,$(subst H,h,$(subst I,i,$(subst J,j,$(subst K,k,$(subst L,l,$(subst M,m,$(subst N,n,$(subst O,o,$(subst P,p,$(subst Q,q,$(subst R,r,$(subst S,s,$(subst T,t,$(subst U,u,$(subst V,v,$(subst W,w,$(subst X,x,$(subst Y,y,$(subst Z,z,$1)))))))))))))))))))))))))))
-lcasefont=$(patsubst $(SRC_ASSETS)/%.ttf,font_%,$(call lowercase,$1))
-fontnameh=$(SRC_ASSETS)/$(call lcasefont,$1).h
-glslnameh=$(patsubst $(SRC_SHADER)/%.glsl,$(SRC_SHADER)/glsl_%.h,$1)
-
-embed_file=$(TOOL_EMBED) -base85 $1 $2 > $3;
-shade_glsl=$(BIN_TOOL)/sokol-shdc --input $1 --output $2 --slang $3;
+embed_name = $(shell echo "$(basename $(1))" | sed 's/[.]ttf$$//i; s/ /_/g; y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/')
 
 .PHONY: all clean $(MODULES)
-all: modules
+all: $(OUTPUTS)
 
 modules: $(MODULES)
-$(MODULES):
-	@say GEN $(DIR_OUTPUT)/$@.wasm 
-	@$(CC) $(CFLAGS) $(shell find $(DIR_MODULE}/$@ -name '*.c') -o $(DIR_OUTPUT)/$@.wasm
+$(MODULES): 
+	@rm -f $(OUT_WASM)/$@.wasm
+	@$(MAKE) $(OUT_WASM)/$@.wasm
+
+$(addprefix $(OUT_WASM)/,$(addsuffix .wasm,$(MODULES))): $(foreach m,$(MODULES),$(wildcard $(SRC_MODULE)/$m/*.c))
+
+$(OUT_WASM)/%.wasm: $(wildcard $(SRC_MODULE)/%/*.c) $(COMMONS)
+	@say GEN $@
+	$(CC) $(CFLAGS) $(filter %.c,$^) -o $@
 
 libraries: $(LIBRARIES)
 $(LIBRARIES): 
@@ -96,9 +100,9 @@ $(SOURCES):
 	@mkdir -p $@
 
 fonts: $(FONTS)
-$(FONTS): $(BIN_TOOL)/bin2comp $(BIN_TOOL)
+	$(SRC_ASSETS)/font_%.h: $(SRC_ASSETS)/%.[toTO][tT][fF] $(TOOL_EMBED)
 	@say GEN $@
-	@$(foreach font, $(SRC_ASSETS), $(call embed_file,$(font),$(call lcasefont,$(font)),$(call fontnameh,$(font))))
+	@$(TOOL_EMBED) $< font_$(call embed_name,$<) > $@
 
 tools: $(TOOLS)
 
@@ -120,9 +124,11 @@ $(SRC_COMMON)/jscc.h: $(LIB_JSCC)/jscc.h
 	@say GEN $@
 	@cp $< $@
 
-$(SRC_COMMON)/cimgui.cpp $(SRC_COMMON)/cimgui.h: $(SRC_LUAGEN)/out
-	@$cd $(SRC_LUAGEN); (LJ)  generator.lua $(CC) internal glfw opengl3 opengl2 sdl -DIMGUI_USER_CONFIG="\"../common/imgui_config.h\"" &>/dev/null
-	@cp -r $(SRC_LUAGEN)/output/* $(SRC_COMMON)/
+$(CIMGUI): $(SRC_LUAGEN)
+	@say GEN $@
+	@cd $(SRC_LUAGEN); IMGUI_PATH=$(shell realpath $(LIB_IMGUI)) luajit ./generator.lua gcc internal glfw opengl3 opengl2 sdl2 sdl3
+	mv $(SRC_DIR)/*.{c,h,cpp} $(SRC_COMMON)
+
 
 $(SRC_LUAGEN) $(SRC_LUAGEN)/generator.lua: $(LIB_CIMGUI)/generator
 	@say GEN $@
@@ -133,12 +139,8 @@ $(OUTPUT):
 	@say GEN $@
 	@mkdir -p $@
 
-clean: clean-out clean-gen
-
-clean-out:
-	@say DEL $(OUT_WASM) 
-	@rm -rf $(OUT_WASM) 
-
-clean-gen:
-	@say DEL $(DIR_COMMON)/gen
-	@rm -rf $(DIR_COMMON)/gen 
+clean:
+	@say DEL $(wildcard $(OUT_WASM)/*.wasm)
+	@rm -f $(OUT_WASM)/*.wasm || true
+	@say DEL $(wildcard $(LIB_COMMON)/cimgui*)
+	@rm -f $(LIB_COMMON)/cimgui* || true

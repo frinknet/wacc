@@ -8,32 +8,14 @@ export BIN="${0##*/}"
 export CMD="$1"
 shift || true
 
+HELP=$(cat<<EOF
 
-function snark() {
-  echo
-  echo "  $1"
-  echo
-}
-
-function wacc_check() {
-  if [[ ! -e src/common/jscc.h ]]; then
-    echo "Not in a ${BIN^^} project: src/common/jscc.h missing." >&2
-    exit 2
-  fi
-  set -a
-  [ -f .env ] && source .env
-  set +a
-}
-
-function wacc_help() {
-  cat <<EOF
-
-  ${BIN^^} v${VER} // © 2025 FRINKnet & Friends
+  ${BIN^^} - v${VER} // © 2025 FRINKnet & Friends
   MIT LICENSE - Suckless. Forkable. Hackable.
 
   Usage: $BIN [command]
 
-  Dead simple WASM dev environment for those who ONLY like C/C++ 
+  Dead simple WASM dev environment for those who ONLY like C/C++
 
   $BIN init [dir]           Create a new WACC project in [dir]
   $BIN dev                  Start continuous build. Change are rebuilt.
@@ -45,11 +27,28 @@ function wacc_help() {
   $BIN build [modules]      Quickly build only the modules you specify
   $BIN pack [modules]       Package the modules you specify in a zip
   $BIN logs [serve|build]   Show either the serve logs or build logs
-  $BIN env [name] [value]   Change your environment
+  $BIN env [name] [value]   Change your environment"
 
-  Get in, write code, ship fast, and leave the yak unshaved!!!!
-
+  Get in... Write code... Ship fast... Leave the yak unshaved!!!
+ 
 EOF
+)
+
+function snark() {
+  echo
+  #echo -e "  \e[1;93m$1\e[0m"
+  echo -e "  $1"
+  echo
+}
+
+function wacc_check() {
+  if [[ ! -e src/common/jscc.h ]]; then
+    echo "Not in a ${BIN^^} project: src/common/jscc.h missing." >&2
+    exit 2
+  fi
+  set -a
+  [ -f .env ] && source .env
+  set +a
 }
 
 function wacc_init() {
@@ -96,12 +95,12 @@ function wacc_update() {
 
     mkdir -p src/common src/modules web/wasm
 
+    # TODO if the files are different show the diff and ask
     cp -ui $wacc/Makefile .
     cp -ui $wacc/docker-compose.yaml .
-    cp -ui $wacc/LICENSE .
-
     cp -rui $wacc/src/Dockerfile src/
     cp -rui $wacc/web/* web/
+    cp -ui $wacc/.gitignore .
   fi
 
   snark "UP TO DATE!!! - And now the real fun begins..."
@@ -166,7 +165,7 @@ function wacc_build() {
   local err out
 
   wacc_check
-  docker compose build build 2>&1 | sed '/^$/d'
+  docker compose build build 1>/dev/null
   err=$?
 
   if [ "$err" -ne 0 ]; then
@@ -184,7 +183,9 @@ function wacc_build() {
   fi
 
   if [ "$1" != "debug" ]; then
-    snark "Well... It worked I guess. Onwards and upwards!"
+    snark "Well - It worked I guess... Onwards and upwards!"
+  else
+    snark "So... Did you solve the mystery of life or what?"
   fi
 }
 
@@ -243,6 +244,8 @@ function wacc_error() {
   snark "Go ask for help like a good little grimlin."
 }
 
+# TODO go to gitroot
+
 # Run the command
 case "$CMD" in
   init)    wacc_init "$@";;
@@ -256,6 +259,6 @@ case "$CMD" in
   pack)    wacc_pack "$@";;
   logs)    wacc_logs "$@";;
   env)     wacc_env "$@";;
-  ""|help|--help|-h) wacc_help;;
+  ""|help|--help|-h) echo "$HELP";;
   *) wacc_error;;
 esac

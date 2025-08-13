@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-RUN apk add --no-cache bash clang make inotify-tools
+RUN apk add --no-cache bash luajit clang make inotify-tools
 
 # Set up bash prompt and debug helpers
 RUN echo "alias vim=vi"			 >> /root/.bashrc && \

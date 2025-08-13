@@ -2,5 +2,5 @@
 	path = libs/cimgui
 	url = https://github.com/frinknet/cimgui.git
 [submodule "MinQND-libc"]
-	path = libs/MinQND-libc
+	path = libs/minqndc
 	url = https://github.com/frinknet/MinQND-libc
