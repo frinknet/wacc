@@ -1,4 +1,4 @@
-# WebAssembly Concise Compiler / v1.2 / MIT
+# Web Assembly Central Command / v1.2 / MIT
 
 We are building a simple and repeatable way to build WASM SPAs, Workers, Worklets and other fun without wrangling Pythons oth te Amazon and 25 build tools. This is a batteries included oppinionated framework and livecycle management system written for the suckless community that loves C. It's work in progress not quite ready for primetime but maturing fast. I've got several big commercial projects where this will be used so don't think of it as a hobby thing. Once those are live I'll post some links so that you can check out how awesome this is. I promise it's coming soon. See how fast the commits are flying!!!
 
