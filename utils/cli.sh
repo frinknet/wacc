@@ -165,7 +165,7 @@ function wacc_build() {
   local err out
 
   wacc_check
-  docker compose build build 1>/dev/null
+  docker compose build build
   err=$?
 
   if [ "$err" -ne 0 ]; then
@@ -182,10 +182,12 @@ function wacc_build() {
     exit $err
   fi
 
-  if [ "$1" != "debug" ]; then
-    snark "Well - It worked I guess... Onwards and upwards!"
-  else
+  if [ "$1" == "debug" ]; then
     snark "So... Did you solve the mystery of life or what?"
+  elif [ "$1" == "clean" ]; then
+    snark "I guess we have to start over now... WELL FUN!!!"
+  else
+    snark "Well - It worked I guess... Onwards and upwards!"
   fi
 }
 
