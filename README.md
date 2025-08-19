@@ -1,14 +1,14 @@
-![logo](logo.svg)
-
 **WACC** \ˈwæk\ ● *verb transitive* — *fr. “WebAssembly Central Command”; ● cf. alt. “Wrangling Angry Cantankerous Commands” — suitable for chronic whack-a-mole survivors; ● possibly from Old Hackish “wak” — mispelling of ‘awk’  ● ...for when you type that for the twentieth time and decided to reinvent the WASM toolchain in BASH without PYTHON or AWK out of spite for the universe!*
 
 1. Opinionated, batteries-included WASM development lifecycle manager for for the suckless community that loves C. ● Builts SPAs, Workers, Worklets and other fun with `JACL` builtin.
 
 2. Continuous build system for rapid-release wranglers and anyone who’s played shell whack-a-mole at midnight.
 
- — all browser amusements—no amazon snakes, no confusion, no circus of build steps.
+### We are building a simple and repeatable way to build WASM SPAs, Workers, Worklets and other fun without wrangling Pythons of the Amazon and 25 other build tools. It's work in progress not quite ready for primetime but maturing fast. We've got several big commercial projects where this will be used so don't think of it as a hobby thing. Once those are live you will get some link love. I promise it's coming.... — all browser amusements  — no snake wrangling, no confusion, no circus!!!
 
-### We are building a simple and repeatable way to build WASM SPAs, Workers, Worklets and other fun without wrangling Pythons of the Amazon and 25 other build tools. It's work in progress not quite ready for primetime but maturing fast. We've got several big commercial projects where this will be used so don't think of it as a hobby thing. Once those are live you will get some link love. I promise it's coming...
+![logo](logo.svg)
+
+
 
 ---
 
