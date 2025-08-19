@@ -1,4 +1,4 @@
-<img src="logo.svg" width="500">
+![logo](logo.svg)
 
 **WACC** \ˈwæk\ ● *verb transitive* — *fr. “WebAssembly Central Command”; ● cf. alt. “Wrangling Angry Cantankerous Commands” — suitable for chronic whack-a-mole survivors; ● possibly from Old Hackish “wak” — mispelling of ‘awk’  ● ...for when you type that for the twentieth time and decided to reinvent the WASM toolchain in BASH without PYTHON or AWK out of spite for the universe!*
 
