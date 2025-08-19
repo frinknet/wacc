@@ -14,14 +14,13 @@ TOOLS := \
 	$(TOOL_EMBED) \
 	$(TOOL_SHADE)
 
-LIB_DIR    := libs
-LIB_JACL   := libs/jacl
-LIB_IMGUI  := libs/imgui
-LIB_CIMGUI := libs/cimgui
-LIB_MINQND := libs/minqndc
+LIB_DIR		:= libs
+LIB_IMGUI	:= libs/imgui
+LIB_CIMGUI	:= libs/cimgui
+LIB_JACLIBC := libs/jaclibc/include
 
 LIBRARIES := \
-	$(LIB_JACL) \
+	$(LIB_JACLLIBC) \
 	$(LIB_IMGUI) \
 	$(LIB_CIMGUI)
 
@@ -68,10 +67,10 @@ CFLAGS := \
 	-ffreestanding \
 	-Wall \
 	-Wno-unused-function \
-	-I$(LIB_JACL) \
+	-I$(LIB_JACLIBC) \
 	-I$(SRC_COMMON) \
 	-I$(LIB_IMGUI) \
-	-include jacl.h
+	-include wacc.h
 
 LFLAGS := \
 	-fuse-ld=lld \
@@ -147,10 +146,6 @@ $(TOOL_SHDC):
 $(TOOL_EMBED): $(LIB_IMGUI)/misc/fonts/binary_to_compressed_c.cpp
 	@say GEN bin2c
 	@$(CC) $< -o $@
-
-$(SRC_COMMON)/minqnd.h: $(LIB_MINQND)/minqnd_libc.h
-	@mkdir -p $(dir $@)
-#	@sed '/extern size_t strftime(/d;/^typedef int wchar_t;/d' $< > $@
 
 $(SRC_LUAGEN): $(LIB_CIMGUI)/generator
 	@say GEN $@

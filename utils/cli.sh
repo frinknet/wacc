@@ -42,8 +42,8 @@ function snark() {
 }
 
 function wacc_check() {
-  if [[ ! -e src/common/jscc.h ]]; then
-    echo "Not in a ${BIN^^} project: src/common/jscc.h missing." >&2
+  if [[ ! -e src/common/wacc.h ]]; then
+    echo "Not in a ${BIN^^} project: src/common/wacc.h missing." >&2
     exit 2
   fi
   set -a
@@ -63,7 +63,7 @@ function wacc_init() {
   git rev-parse --is-inside-work-tree &>/dev/null || git init --quiet
   git submodule update --init --recursive --depth 1
 
-  if [[ -f web/loadWASM.js && -f src/common/jscc.h ]]; then
+  if [[ -f web/loadWASM.js && -f src/common/wacc.h ]]; then
     snark "DUDE!!! - You can't out ${BIN^^} the ${BIN^^}"
     snark "  $BIN init [dirname]"
     snark "Try initializing a new directory instead..." >&2
