@@ -14,10 +14,10 @@ TOOLS := \
 	$(TOOL_EMBED) \
 	$(TOOL_SHADE)
 
-LIB_DIR		:= libs
-LIB_IMGUI	:= libs/imgui
-LIB_CIMGUI	:= libs/cimgui
-LIB_JACLIBC := libs/jaclibc/include
+LIB_DIR		:= lib
+LIB_IMGUI	:= lib/imgui
+LIB_CIMGUI	:= lib/cimgui
+LIB_JACLIBC := lib/jaclibc/include
 
 LIBRARIES := \
 	$(LIB_JACLLIBC) \
