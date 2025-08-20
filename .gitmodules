@@ -1,4 +1,6 @@
 [submodule "lib/cimgui"]
 	path = lib/cimgui
 	url = https://github.com/frinknet/cimgui.git
-[submodule "lib/jaclibc"] path = lib/jaclibc url = git@github.com:frinknet/JACLibc.git
+[submodule "lib/jaclibc"]
+	path = lib/jaclibc
+	url = git@github.com:frinknet/JACLibc.git

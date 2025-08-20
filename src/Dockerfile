@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-RUN apk add --no-cache bash luajit clang lld make inotify-tools
+RUN apk add --no-cache bash luajit clang lld make inotify-tools libc++ libc++-dev vim
 
 # Set up bash prompt and debug helpers
 RUN echo "alias vim=vi"			 >> /root/.bashrc && \
@@ -12,7 +12,7 @@ RUN cat <<'EOF' > /usr/local/bin/docker-entrypoint.sh
 set -e
 
 if [ "$1" = "debug" ]; then
-  echo -e "\n\n\e[1;33m  You are now DEEP in the WACC build system... BEWARE OF THE GRU!!!\e[0m"
+  echo -e "\n\n\e[1;33m  You are now DEEP in the WACC build system... BEWARE OF THE GRUE!!!\e[0m"
   exec bash -i
 fi
 

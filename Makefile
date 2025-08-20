@@ -20,7 +20,7 @@ LIB_CIMGUI	:= lib/cimgui
 LIB_JACLIBC := lib/jaclibc/include
 
 LIBRARIES := \
-	$(LIB_JACLLIBC) \
+	$(LIB_JACLIBC) \
 	$(LIB_IMGUI) \
 	$(LIB_CIMGUI)
 
@@ -62,25 +62,23 @@ TARGET := wasm32-unknown-unknown
 CFLAGS := \
 	--target=$(TARGET) \
 	-O2 \
-	-nostdlib \
+	-Wall \
+	-isystem $(LIB_JACLIBC) \
 	-mbulk-memory \
 	-ffreestanding \
-	-Wall \
 	-Wno-unused-function \
-	-I$(LIB_JACLIBC) \
 	-I$(SRC_COMMON) \
-	-I$(LIB_IMGUI) \
-	-include wacc.h
+	-I$(LIB_IMGUI)
 
 LFLAGS := \
 	-fuse-ld=lld \
 	-Wl,--import-memory \
 	-Wl,--export-all,--no-entry
 
+PFLAGS := 
+
 IFLAGS := \
-	-include imgui_internal.h \
-	-include imgui.h \
-	-include cimgui.h
+	-include $(SRC_COMMON)/wacc.h
 
 define BASH_FUNC_say%%
 () {
@@ -109,13 +107,13 @@ $(MODULES):
 	@rm -f $(OUT_WASM)/$@.wasm
 	@$(MAKE) $(OUT_WASM)/$@.wasm
 
-$(addprefix $(OUT_WASM)/,$(addsuffix .wasm,$(MODULES))): $(foreach m,$(MODULES),$(wildcard $(SRC_MODULE)/$m/*.c))
+#$(addprefix $(OUT_WASM)/,$(addsuffix .wasm,$(MODULES))): $(foreach m,$(MODULES),$(wildcard $(SRC_MODULE)/$m/*.c))
 
 $(CIMGUI): $(SRC_LUAGEN) | $(SRC_COMMON)
 	@say GEN $(CIMGUI)
 	@cd $(SRC_LUAGEN) && IMGUI_PATH=$(shell realpath $(LIB_IMGUI)) $(LJ) generator.lua $(CC) internal glfw opengl3 opengl2 sdl2 >/dev/null
-	@sed '/#include[[:space:]]*<[^>]*>/d' $(LIB_IMGUI)/imgui.h > $(SRC_COMMON)/imgui.h
-	@sed '/#include[[:space:]]*<[^>]*>/d' $(LIB_IMGUI)/imgui_internal.h > $(SRC_COMMON)/imgui_internal.h
+#	@sed '/#include[[:space:]]*<[^>]*>/d' $(LIB_IMGUI)/imgui.h > $(SRC_COMMON)/imgui.h
+#	@sed '/#include[[:space:]]*<[^>]*>/d' $(LIB_IMGUI)/imgui_internal.h > $(SRC_COMMON)/imgui_internal.h
 	@mv $(SRC_DIR)/cimgui* $(SRC_COMMON)/
 
 libraries: $(LIBRARIES)
@@ -151,14 +149,14 @@ $(SRC_LUAGEN): $(LIB_CIMGUI)/generator
 	@say GEN $@
 	@cp -r $< $@
 	@say GEN $@/*
-	@sed -i 's|"./imgui/|"|g;/#include[[:space:]]*<[^>]*>/d' $(SRC_LUAGEN)/*template*
+	@sed -i 's|"./imgui/|"|g' $(SRC_LUAGEN)/*template*
 
 .SUFFIXES: .c .o .wasm
 
 $(SRC_OUTPUT)/common/%.o: src/common/%.cpp
 	@say GEN $@
 	@mkdir -p $(dir $@)
-	@$(CC) -std=gnu++17 $(CFLAGS) -c $< -o $@
+	@$(CC) -std=gnu++17 $(CFLAGS) $(PFLAGS) -c $< -o $@
 
 $(SRC_OUTPUT)/%.o: $(SRC_MODULE)/%/*.c | $(SRC_OUTPUT)
 	@say GEN $@
@@ -166,12 +164,18 @@ $(SRC_OUTPUT)/%.o: $(SRC_MODULE)/%/*.c | $(SRC_OUTPUT)
 
 $(OUT_WASM):
 	@say GEN $@
-	@mkdir -p $@
+	@cp -rf $(LIB_JACLIBS)/web web
 
 $(OUT_WASM)/%.wasm: $(SRC_OUTPUT)/%.o $(COMMON_OBJS) | $(OUT_WASM)
 	@say GEN $@
-	@$(CC) -fuse-ld=lld -Wl,--export-all,--no-entry $^ -o $@
+	$(CC) -fuse-ld=lld -Wl,--export-all,--no-entry $^ -o $@
+$(OUT_WASM)/%.wasm: $(SRC_OUTPUT)/%.o $(COMMON_OBJS) | $(OUT_WASM)
+	@say GEN $@
+	$(CC) --target=$(TARGET) $(LFLAGS) $(SRC_OUTPUT)/$*.o $(COMMON_OBJS) -o $@
 
+
+rebuild: clean all
+reset: clean
 clean:
 	@say DEL $(wildcard $(SRC_COMMON)/cimgui* $(SRC_COMMON)/imgui*.h $(SRC_LUAGEN)/* $(SRC_LUAGEN))
 	@rm -rf $(wildcard $(SRC_COMMON)/cimgui* $(SRC_COMMON)/imgui*.h) $(SRC_LUAGEN)
