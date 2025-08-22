@@ -1,6 +1,10 @@
-#include "wacc.h"
+JS_EXPORT("frame")
+void frame(void) {
+		igNewFrame();
+		igShowDemoWindow(NULL);
+		igRender();
+}
 
-JS_START
 void main(void) {
 	JS_CODE(
 		Object.assign(document.body.style, {margin:0, overflow:"hidden"});
@@ -24,11 +28,4 @@ void main(void) {
 
 		(function loop(){ WASM.exports.frame(); requestAnimationFrame(loop); })();
 	);
-}
-
-JS_EXPORT("frame")
-void frame(void) {
-		igNewFrame();
-		igShowDemoWindow(NULL);
-		igRender();
 }

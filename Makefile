@@ -17,7 +17,7 @@ TOOLS := \
 LIB_DIR		:= lib
 LIB_IMGUI	:= lib/imgui
 LIB_CIMGUI	:= lib/cimgui
-LIB_JACLIBC := lib/jaclibc/include
+LIB_JACLIBC := lib/jaclibc
 
 LIBRARIES := \
 	$(LIB_JACLIBC) \
@@ -39,6 +39,8 @@ SOURCES := \
 	$(SRC_OUTPUT) \
 	$(SRC_SHADER)
 
+IMGUI := $(wildcard $(LIB_IMGUI)/*.cpp)
+
 CIMGUI = \
 	$(SRC_COMMON)/cimgui.cpp \
 	$(SRC_COMMON)/cimgui.h \
@@ -48,8 +50,9 @@ CIMGUI = \
 COMMONS := \
 	$(CIMGUI)
 
-COMMON_SRCS := src/common/cimgui.cpp src/common/cimgui_impl.cpp
-COMMON_OBJS := $(patsubst src/common/%.cpp,$(SRC_OUTPUT)/common/%.o,$(COMMON_SRCS))
+IMGUI_SRCS := $(patsubst $(LIB_IMGUI)/%, $(SRC_COMMON)/%, $(IMGUI))
+COMMON_SRCS := src/common/cimgui.cpp src/common/cimgui_impl.cpp $(IMGUI_SRCS)
+COMMON_OBJS := $(patsubst src/common/%.cpp,$(SRC_OUTPUT)/common/%.o,$(COMMON_SRCS)) $(SRC_OUTPUT)/common/jacl.o
 
 MODULES := $(notdir $(wildcard $(SRC_MODULE)/*))
 
@@ -63,21 +66,28 @@ CFLAGS := \
 	--target=$(TARGET) \
 	-O2 \
 	-Wall \
-	-isystem $(LIB_JACLIBC) \
+	-Wno-return-type \
+	-Wno-unused-function \
+	-Wno-unused-command-line-argument \
+	-nostdinc \
+	-nostdlib \
+	-I $(LIB_JACLIBC)/include \
+	-pthread \
+	-matomics \
 	-mbulk-memory \
 	-ffreestanding \
-	-Wno-unused-function \
 	-I$(SRC_COMMON) \
 	-I$(LIB_IMGUI)
+
+PFLAGS := \
+	-include $(LIB_JACLIBC)/include/jacl.h
 
 LFLAGS := \
 	-fuse-ld=lld \
 	-Wl,--import-memory \
-	-Wl,--export-all,--no-entry
+	-Wl,--export-all
 
-PFLAGS := 
-
-IFLAGS := \
+MFLAGS := \
 	-include $(SRC_COMMON)/wacc.h
 
 define BASH_FUNC_say%%
@@ -93,9 +103,9 @@ export BASH_FUNC_say%%
 
 embed_name = $(shell echo "$(basename $(1))" | sed 's/[.]ttf$$//i; s/ /_/g; y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/')
 
-.SUFFIXES:		# clear all
-.SUFFIXES: .o .wasm  # only allow .o→.wasm
-
+.DELETE_ON_ERROR:
+.PRECIOUS: $(SRC_OUTPUT)/%.o $(SRC_COMMON)/%.cpp
+.SUFFIXES: .h .c .cpp .o .wasm
 .PHONY: all clean $(MODULES)
 all: $(OUTPUTS)
 
@@ -107,13 +117,13 @@ $(MODULES):
 	@rm -f $(OUT_WASM)/$@.wasm
 	@$(MAKE) $(OUT_WASM)/$@.wasm
 
-#$(addprefix $(OUT_WASM)/,$(addsuffix .wasm,$(MODULES))): $(foreach m,$(MODULES),$(wildcard $(SRC_MODULE)/$m/*.c))
+$(SRC_COMMON)/%.cpp: $(LIB_IMGUI)/%.cpp | $(SRC_COMMON)
+	@say GEN $@
+	@cp $< $@
 
 $(CIMGUI): $(SRC_LUAGEN) | $(SRC_COMMON)
-	@say GEN $(CIMGUI)
+	@say GEN $@
 	@cd $(SRC_LUAGEN) && IMGUI_PATH=$(shell realpath $(LIB_IMGUI)) $(LJ) generator.lua $(CC) internal glfw opengl3 opengl2 sdl2 >/dev/null
-#	@sed '/#include[[:space:]]*<[^>]*>/d' $(LIB_IMGUI)/imgui.h > $(SRC_COMMON)/imgui.h
-#	@sed '/#include[[:space:]]*<[^>]*>/d' $(LIB_IMGUI)/imgui_internal.h > $(SRC_COMMON)/imgui_internal.h
 	@mv $(SRC_DIR)/cimgui* $(SRC_COMMON)/
 
 libraries: $(LIBRARIES)
@@ -151,16 +161,19 @@ $(SRC_LUAGEN): $(LIB_CIMGUI)/generator
 	@say GEN $@/*
 	@sed -i 's|"./imgui/|"|g' $(SRC_LUAGEN)/*template*
 
-.SUFFIXES: .c .o .wasm
-
-$(SRC_OUTPUT)/common/%.o: src/common/%.cpp
+$(SRC_OUTPUT)/common/%.o: src/common/%.cpp 
 	@say GEN $@
 	@mkdir -p $(dir $@)
 	@$(CC) -std=gnu++17 $(CFLAGS) $(PFLAGS) -c $< -o $@
 
-$(SRC_OUTPUT)/%.o: $(SRC_MODULE)/%/*.c | $(SRC_OUTPUT)
+$(SRC_OUTPUT)/common/jacl.o: $(LIB_JACLIBC)/src/*.c
 	@say GEN $@
-	$(CC) -std=gnu++17 $(CFLAGS) $(IFLAGS) -xc++ -c $< -o $@
+	@mkdir -p $(dir $@)
+	@$(CC) -std=gnu17 $(CFLAGS)	$(LFLAGS) -r $^ -o $@
+
+$(SRC_OUTPUT)/%.o: $(SRC_MODULE)/%/*.c | $(SRC_OUTPUT)
+	@say GEN $@ 
+	@$(CC) -std=gnu17 $(CFLAGS) $(MFLAGS) -c $< -o $@
 
 $(OUT_WASM):
 	@say GEN $@
@@ -168,17 +181,13 @@ $(OUT_WASM):
 
 $(OUT_WASM)/%.wasm: $(SRC_OUTPUT)/%.o $(COMMON_OBJS) | $(OUT_WASM)
 	@say GEN $@
-	$(CC) -fuse-ld=lld -Wl,--export-all,--no-entry $^ -o $@
-$(OUT_WASM)/%.wasm: $(SRC_OUTPUT)/%.o $(COMMON_OBJS) | $(OUT_WASM)
-	@say GEN $@
-	$(CC) --target=$(TARGET) $(LFLAGS) $(SRC_OUTPUT)/$*.o $(COMMON_OBJS) -o $@
+	@$(CC) $(CFLAGS) $(LFLAGS) $(SRC_OUTPUT)/$*.o $(COMMON_OBJS) -o $@
 
-
-rebuild: clean all
+again: clean all
 reset: clean
 clean:
-	@say DEL $(wildcard $(SRC_COMMON)/cimgui* $(SRC_COMMON)/imgui*.h $(SRC_LUAGEN)/* $(SRC_LUAGEN))
-	@rm -rf $(wildcard $(SRC_COMMON)/cimgui* $(SRC_COMMON)/imgui*.h) $(SRC_LUAGEN)
+	@say DEL $(COMMON_SRCS) $(SRC_COMMON)/imgui*.h $(SRC_LUAGEN)/* $(SRC_LUAGEN)
+	@rm -rf $(COMMON_SRCS) $(SRC_COMMON)/imgui*.h $(SRC_LUAGEN)
 	@say DEL $(wildcard $(SRC_OUTPUT)/*/*.* $(SRC_OUTPUT))
 	@rm -rf $(SRC_OUTPUT)
 	@say DEL $(wildcard $(OUT_WASM)/*.wasm)

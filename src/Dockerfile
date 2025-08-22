@@ -1,17 +1,31 @@
 FROM alpine:latest
 
-RUN apk add --no-cache bash luajit clang lld make inotify-tools libc++ libc++-dev vim
+# Install prerequisites
+RUN apk add --no-cache \
+      bash \
+      luajit \
+      clang \
+      lld \
+      make \
+      inotify-tools \
+      llvm-dev \
+      libc++ \
+      libc++-dev \
+      vim \
+      curl \
+      tar
+
+RUN apk add wabt --repository=https://dl-cdn.alpinelinux.org/alpine/edge/testing/
 
 # Set up bash prompt and debug helpers
-RUN echo "alias vim=vi"			 >> /root/.bashrc && \
-    echo "trap echo DEBUG"	 >> /root/.bashrc && \
+RUN echo "trap echo DEBUG"	 >> /root/.bashrc && \
     echo 'export PS1="\n\[\e[1;91m\]  \w \[\e[38;5;52m\]\$\[\e[0m\] \[\e]12;#999900\007\]\[\e]12;#999900\007\]\[\e[3 q\]"' >> /root/.bashrc
 
 RUN cat <<'EOF' > /usr/local/bin/docker-entrypoint.sh
 #!/usr/bin/env bash
 set -e
 
-if [ "$1" = "debug" ]; then
+if [ "$1" = "cli" ]; then
   echo -e "\n\n\e[1;33m  You are now DEEP in the WACC build system... BEWARE OF THE GRUE!!!\e[0m"
   exec bash -i
 fi

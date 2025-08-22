@@ -4,8 +4,10 @@ services:
       context: ./src
     volumes:
       - ./:/build
+      - ~/.vimrc:/root/.vimrc:ro
     environment:
       - BUILD_ONCE
+      - TERM
 
   serve:
     image: caddy:alpine

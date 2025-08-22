@@ -1,4 +1,8 @@
-#include <jsio.h>
-#include <imgui_internal.h>
-#include <imgui.h>
-#include <cimgui.h>
+#ifndef WACC_H
+#define WACC_H
+
+#include <jacl.h>
+#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#include "cimgui.h"
+
+#endif

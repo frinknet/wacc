@@ -8,6 +8,8 @@ export BIN="${0##*/}"
 export CMD="$1"
 shift || true
 
+cd "$(git rev-parse --show-toplevel 2>/dev/null || echo '.')"
+
 HELP=$(cat<<EOF
 
   ${BIN^^} - v${VER} // © 2025 FRINKnet & Friends
